@@ -7,6 +7,7 @@ export async function callGreenode(prompt: string): Promise<string> {
       model: process.env.GREENODE_MODEL,
       messages: [{ role: "user", content: prompt }],
       temperature: 0.2,
+      max_tokens: 8192,
     }),
   });
   if (!res.ok) { console.error(`GREENODE_ERROR: status ${res.status}`); throw new Error("GREENODE_ERROR"); }
