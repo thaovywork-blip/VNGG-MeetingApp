@@ -9,7 +9,6 @@ export function isMeetingResult(x: unknown): x is MeetingResult {
   if (typeof o.summary !== "string" || typeof o.language !== "string" || !Array.isArray(o.tasks)) return false;
   return o.tasks.every((t) => {
     const tt = t as Record<string, unknown>;
-    return typeof tt.task === "string" && (tt.type === "chot" || tt.type === "de_xuat")
-      && typeof tt.pic === "string" && typeof tt.deadline === "string" && typeof tt.reference === "string";
+    return typeof tt.task === "string" && (tt.type === "chot" || tt.type === "de_xuat");
   });
 }

@@ -15,3 +15,12 @@ test("parses JSON wrapped in prose and code fences", () => {
 test("throws on garbage", () => {
   expect(() => parseResult("xin chào không có json")).toThrow("INVALID_RESULT");
 });
+test("parses a task that omits pic/deadline/reference and fills them with empty strings", () => {
+  const partial = '{"summary":"s","language":"vi","tasks":[{"task":"Gửi JD","type":"chot"}]}';
+  const r = parseResult(partial);
+  expect(r.tasks[0].task).toBe("Gửi JD");
+  expect(r.tasks[0].pic).toBe("");
+  expect(r.tasks[0].deadline).toBe("");
+  expect(r.tasks[0].reference).toBe("");
+  expect(r.tasks[0].id).toBeTruthy();
+});

@@ -13,3 +13,8 @@ test("isMeetingResult rejects bad type value", () => {
     { id: "1", task: "t", pic: "", type: "WRONG", deadline: "", reference: "" },
   ]})).toBe(false);
 });
+test("isMeetingResult accepts a task with only task and type (pic/deadline/reference/id omitted)", () => {
+  expect(isMeetingResult({ summary: "s", language: "vi", tasks: [
+    { task: "t", type: "chot" },
+  ]})).toBe(true);
+});
