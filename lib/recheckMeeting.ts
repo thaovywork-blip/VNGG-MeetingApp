@@ -7,9 +7,8 @@ export interface RecheckRequest { rawText: string; current: MeetingResult; langu
 
 export async function recheckMeeting(req: RecheckRequest, deps: RecheckDeps): Promise<MeetingResult> {
   const prompt = buildRecheckPrompt(req.rawText, JSON.stringify(req.current), req.language);
-  for (let attempt = 0; attempt < 2; attempt++) {
-    const out = await deps.callModel(prompt);
-    try { return parseResult(out); } catch { if (attempt === 1) throw new Error("INVALID_RESULT"); }
-  }
-  throw new Error("INVALID_RESULT");
+  const first = await deps.callModel(prompt);
+  try { return parseResult(first); } catch { /* retry once */ }
+  const second = await deps.callModel(prompt);
+  try { return parseResult(second); } catch { throw new Error("INVALID_RESULT"); }
 }

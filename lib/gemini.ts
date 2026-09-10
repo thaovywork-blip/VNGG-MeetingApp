@@ -13,5 +13,5 @@ export async function transcribeMedia(file: { mimeType: string; base64: string }
       ]}],
     });
     return res.text ?? "";
-  } catch { throw new Error("GEMINI_ERROR"); }
+  } catch (err) { console.error(err); throw new Error("GEMINI_ERROR"); }
 }

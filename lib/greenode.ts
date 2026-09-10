@@ -9,7 +9,7 @@ export async function callGreenode(prompt: string): Promise<string> {
       temperature: 0.2,
     }),
   });
-  if (!res.ok) throw new Error("GREENODE_ERROR");
+  if (!res.ok) { console.error(`GREENODE_ERROR: status ${res.status}`); throw new Error("GREENODE_ERROR"); }
   const data = await res.json();
   return data.choices?.[0]?.message?.content ?? "";
 }
