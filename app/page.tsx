@@ -30,13 +30,18 @@ function fileToBase64(file: File): Promise<string> {
   });
 }
 
+// InputPanel already rejects unsupported/oversized files before they reach here (both via
+// the file picker and drag-and-drop), so this is a defensive re-classification rather than
+// the primary guard: only recognized image/audio files are ever sent to Gemini as media.
 async function filesToMedia(files: File[]): Promise<Media[]> {
   let imageCount = 0;
   let audioCount = 0;
   const media: Media[] = [];
   for (const file of files) {
-    const base64 = await fileToBase64(file);
     const isImage = file.type.startsWith("image/");
+    const isAudio = file.type.startsWith("audio/");
+    if (!isImage && !isAudio) continue;
+    const base64 = await fileToBase64(file);
     const label = isImage ? `Ảnh ${++imageCount}` : `Ghi âm ${++audioCount}`;
     media.push({ label, mimeType: file.type, base64 });
   }

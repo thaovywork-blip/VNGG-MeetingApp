@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { toast } from "sonner";
 
 export interface InputValue {
   text: string;
@@ -16,8 +17,14 @@ interface InputPanelProps {
   busy: boolean;
 }
 
+const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
+
 function isTextFile(file: File): boolean {
-  return file.type === "text/plain" || file.name.toLowerCase().endsWith(".txt");
+  return file.type.startsWith("text/") || file.name.toLowerCase().endsWith(".txt");
+}
+
+function isSupportedMedia(file: File): boolean {
+  return file.type.startsWith("image/") || file.type.startsWith("audio/");
 }
 
 export default function InputPanel({ value, onChange, onSubmit, busy }: InputPanelProps) {
@@ -28,18 +35,32 @@ export default function InputPanel({ value, onChange, onSubmit, busy }: InputPan
     !value.text.trim() && !value.participants.trim() && !value.context.trim() && value.files.length === 0;
   const canSubmit = !busy && (value.text.trim().length > 0 || value.files.length > 0);
 
-  // .txt files are folded straight into the notes textarea (they're just pasted notes
-  // in file form); images/audio are kept as files for the backend to transcribe.
+  // Shared by both the file picker and drag-and-drop, so every guard below applies to
+  // both entry points. .txt/text files are folded straight into the notes textarea
+  // (they're just pasted notes in file form); images/audio are kept as files for the
+  // backend to transcribe; anything else, or anything oversized, is rejected.
   async function addFiles(fileList: FileList | File[]) {
     const incoming = Array.from(fileList);
-    const textFiles = incoming.filter(isTextFile);
-    const mediaFiles = incoming.filter((f) => !isTextFile(f));
-
     let appendedText = value.text;
-    for (const f of textFiles) {
-      const content = await f.text();
-      appendedText = appendedText ? `${appendedText}\n\n${content}` : content;
+    const mediaFiles: File[] = [];
+
+    for (const f of incoming) {
+      if (f.size > MAX_FILE_SIZE) {
+        toast.error(`File "${f.name}" quá lớn (tối đa 20MB)`);
+        continue;
+      }
+      if (isTextFile(f)) {
+        const content = await f.text();
+        appendedText = appendedText ? `${appendedText}\n\n${content}` : content;
+        continue;
+      }
+      if (isSupportedMedia(f)) {
+        mediaFiles.push(f);
+        continue;
+      }
+      toast.error(`Định dạng không hỗ trợ: ${f.name}`);
     }
+
     onChange({ ...value, text: appendedText, files: [...value.files, ...mediaFiles] });
   }
 
