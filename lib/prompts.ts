@@ -20,3 +20,16 @@ GHI CHÚ THÔ:
 ${rawText}
 """`;
 }
+
+export function buildRecheckPrompt(rawText: string, currentJson: string, language: string): string {
+  return `Đây là ghi chú thô gốc và bảng kết quả hiện tại (có thể có lỗi phân loại/gán sai).
+Đọc lại ghi chú gốc, soát và sửa bảng cho đúng. CHỈ trả về JSON đúng khuôn như trước, ngôn ngữ "${language}".
+
+GHI CHÚ GỐC:
+"""
+${rawText}
+"""
+
+BẢNG HIỆN TẠI:
+${currentJson}`;
+}
