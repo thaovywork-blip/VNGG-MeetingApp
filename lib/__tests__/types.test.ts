@@ -4,17 +4,17 @@ import { isMeetingResult } from "../types";
 
 test("isMeetingResult accepts a valid object", () => {
   const r: MeetingResult = { summary: "s", language: "vi", tasks: [
-    { id: "1", task: "t", pic: "", type: "chot", deadline: "", reference: "r" },
+    { id: "1", task: "t", pic: "", deadline: "", note: "n" },
   ]};
   expect(isMeetingResult(r)).toBe(true);
 });
-test("isMeetingResult rejects bad type value", () => {
+test("isMeetingResult rejects a task without a task field", () => {
   expect(isMeetingResult({ summary: "s", language: "vi", tasks: [
-    { id: "1", task: "t", pic: "", type: "WRONG", deadline: "", reference: "" },
+    { id: "1", pic: "", deadline: "", note: "" },
   ]})).toBe(false);
 });
-test("isMeetingResult accepts a task with only task and type (pic/deadline/reference/id omitted)", () => {
+test("isMeetingResult accepts a task with only task (pic/deadline/note/id omitted)", () => {
   expect(isMeetingResult({ summary: "s", language: "vi", tasks: [
-    { task: "t", type: "chot" },
+    { task: "t" },
   ]})).toBe(true);
 });

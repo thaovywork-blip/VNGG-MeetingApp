@@ -7,8 +7,8 @@ const q = (s: string) => {
   return `"${safe.replace(/"/g, '""')}"`;
 };
 export function tasksToCsv(result: MeetingResult): string {
-  const header = "Task,PIC,Loại,Deadline,Reference";
-  const rows = result.tasks.map((t) =>
-    [t.task, t.pic, t.type === "chot" ? "Chốt" : "Đề xuất", t.deadline, t.reference].map(q).join(","));
+  const header = "STT,Task,PIC,Deadline,Note";
+  const rows = result.tasks.map((t, i) =>
+    [String(i + 1), t.task, t.pic, t.deadline, t.note].map(q).join(","));
   return [header, ...rows].join("\n");
 }

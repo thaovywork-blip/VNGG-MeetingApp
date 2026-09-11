@@ -67,12 +67,10 @@ function errorCodeFrom(e: unknown): string {
 
 function applyTaskEdit(task: Task, field: keyof Task, value: string): Task {
   switch (field) {
-    case "type":
-      return { ...task, type: value === "chot" ? "chot" : "de_xuat" };
     case "task":
     case "pic":
     case "deadline":
-    case "reference":
+    case "note":
       return { ...task, [field]: value };
     default:
       return task;

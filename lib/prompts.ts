@@ -6,14 +6,15 @@ export const GEMINI_AUDIO_PROMPT =
 export function buildClaudePrompt(rawText: string, language: string): string {
   return `Bạn là trợ lý ghi biên bản họp. Dưới đây là ghi chú thô của một cuộc họp (nhiều nguồn, đã ghép lại).
 
-Làm theo đúng 4 bước:
+Làm theo đúng 3 bước:
 0. Chuẩn hoá ngôn ngữ: dịch mọi thứ về ngôn ngữ "${language}", diễn giải slang/viết tắt/Gen Z (vd "chốt kèo" = đã thống nhất).
-1. Viết meeting minutes: tóm tắt ý chính cuộc họp.
-2. Phân loại mỗi việc là "chot" (đã chốt) hay "de_xuat" (mới đề xuất).
-3. Với mỗi việc, tách: nội dung việc (task), người phụ trách (pic), hạn (deadline). Mỗi việc kèm "reference" = trích đúng đoạn trong ghi chú thô mà việc đó dựa vào.
+1. Viết meeting minutes vào "summary": tóm tắt ý chính cuộc họp.
+2. Rút danh sách việc cần làm: với mỗi việc, tách nội dung việc (task), hạn (deadline), và ghi chú ngắn nếu cần (note) — ví dụ bối cảnh hoặc lưu ý thêm.
+
+QUAN TRỌNG: KHÔNG gán người phụ trách (PIC) cho bất kỳ việc nào — người dùng sẽ tự nhập tay. KHÔNG phân loại việc là "chốt" hay "đề xuất".
 
 CHỈ trả về một object JSON hợp lệ, KHÔNG kèm chữ nào khác, theo đúng khuôn:
-{"summary": string, "language": "${language}", "tasks": [{"task": string, "pic": string, "type": "chot"|"de_xuat", "deadline": string, "reference": string}]}
+{"summary": string, "language": "${language}", "tasks": [{"task": string, "deadline": string, "note": string}]}
 
 GHI CHÚ THÔ:
 """
@@ -22,8 +23,10 @@ ${rawText}
 }
 
 export function buildRecheckPrompt(rawText: string, currentJson: string, language: string): string {
-  return `Đây là ghi chú thô gốc và bảng kết quả hiện tại (có thể có lỗi phân loại/gán sai).
-Đọc lại ghi chú gốc, soát và sửa bảng cho đúng. CHỈ trả về JSON đúng khuôn như trước, ngôn ngữ "${language}".
+  return `Đây là ghi chú thô gốc và bảng kết quả hiện tại (có thể có lỗi).
+Đọc lại ghi chú gốc, soát và sửa lại task/deadline/note cho đúng. Bảng hiện tại có trường "pic" do người dùng tự nhập tay cho từng việc — GIỮ NGUYÊN giá trị "pic" của mỗi việc, chỉ echo lại y nguyên, KHÔNG được tự thêm/sửa/xoá PIC.
+CHỈ trả về JSON đúng khuôn sau, ngôn ngữ "${language}":
+{"summary": string, "language": "${language}", "tasks": [{"task": string, "pic": string, "deadline": string, "note": string}]}
 
 GHI CHÚ GỐC:
 """

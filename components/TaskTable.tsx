@@ -1,14 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { Task, TaskType } from "@/lib/types";
+import type { Task } from "@/lib/types";
 
 interface TaskTableProps {
   tasks: Task[];
   onEdit: (id: string, field: keyof Task, value: string) => void;
 }
-
-const TYPE_LABELS: Record<TaskType, string> = { chot: "Chốt", de_xuat: "Đề xuất" };
 
 export default function TaskTable({ tasks, onEdit }: TaskTableProps) {
   if (tasks.length === 0) {
@@ -20,16 +18,17 @@ export default function TaskTable({ tasks, onEdit }: TaskTableProps) {
       <table className="w-full min-w-[820px] table-fixed text-left text-sm">
         <thead className="bg-zinc-50 text-xs uppercase tracking-wide text-zinc-500 dark:bg-zinc-900 dark:text-zinc-400">
           <tr>
+            <th className="w-[6%] px-4 py-2.5 font-medium">STT</th>
             <th className="w-[32%] px-4 py-2.5 font-medium">Task</th>
             <th className="w-[14%] px-4 py-2.5 font-medium">PIC</th>
-            <th className="w-[12%] px-4 py-2.5 font-medium">Loại</th>
             <th className="w-[14%] px-4 py-2.5 font-medium">Deadline</th>
-            <th className="w-[28%] px-4 py-2.5 font-medium">Reference</th>
+            <th className="w-[34%] px-4 py-2.5 font-medium">Note</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
-          {tasks.map((t) => (
+          {tasks.map((t, i) => (
             <tr key={t.id} className="align-top">
+              <td className="px-4 py-2.5 text-zinc-400 dark:text-zinc-500">{i + 1}</td>
               <td className="px-4 py-2.5">
                 <EditableField value={t.task} onCommit={(v) => onEdit(t.id, "task", v)} multiline />
               </td>
@@ -37,20 +36,10 @@ export default function TaskTable({ tasks, onEdit }: TaskTableProps) {
                 <EditableField value={t.pic} onCommit={(v) => onEdit(t.id, "pic", v)} />
               </td>
               <td className="px-4 py-2.5">
-                <select
-                  value={t.type}
-                  onChange={(e) => onEdit(t.id, "type", e.target.value)}
-                  className="w-full rounded-md border border-zinc-200 bg-transparent px-2 py-1.5 text-sm focus:border-indigo-500 focus:outline-none dark:border-zinc-700"
-                >
-                  <option value="chot">{TYPE_LABELS.chot}</option>
-                  <option value="de_xuat">{TYPE_LABELS.de_xuat}</option>
-                </select>
-              </td>
-              <td className="px-4 py-2.5">
                 <EditableField value={t.deadline} onCommit={(v) => onEdit(t.id, "deadline", v)} />
               </td>
-              <td className="px-4 py-2.5 whitespace-pre-wrap break-words text-xs text-zinc-400 dark:text-zinc-500">
-                {t.reference || "—"}
+              <td className="px-4 py-2.5">
+                <EditableField value={t.note} onCommit={(v) => onEdit(t.id, "note", v)} multiline />
               </td>
             </tr>
           ))}

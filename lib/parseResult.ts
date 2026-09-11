@@ -18,8 +18,8 @@ export function parseResult(raw: string): MeetingResult {
   const r = obj as MeetingResult;
   r.tasks = r.tasks.map((t, i): Task => ({
     id: t.id?.toString() || String(i + 1),
-    task: t.task, pic: t.pic ?? "", type: t.type,
-    deadline: t.deadline ?? "", reference: t.reference ?? "",
+    task: t.task, pic: t.pic ?? "",
+    deadline: t.deadline ?? "", note: t.note ?? "",
   }));
   return r;
 }

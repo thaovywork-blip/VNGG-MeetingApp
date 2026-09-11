@@ -1,14 +1,26 @@
 import { expect, test } from "vitest";
-import { buildClaudePrompt, GEMINI_AUDIO_PROMPT } from "../prompts";
+import { buildClaudePrompt, buildRecheckPrompt, GEMINI_AUDIO_PROMPT } from "../prompts";
 
-test("claude prompt embeds raw text, language, JSON schema and the 4 steps", () => {
+test("claude prompt embeds raw text, language, JSON schema and the steps", () => {
   const p = buildClaudePrompt("NỘI DUNG THÔ", "vi");
   expect(p).toContain("NỘI DUNG THÔ");
   expect(p).toContain("vi");
   expect(p).toContain('"tasks"');
-  expect(p).toContain("chot");
-  expect(p).toContain("de_xuat");
+  expect(p).toContain('"note"');
   expect(p.toLowerCase()).toContain("chuẩn hoá");
+});
+test("claude prompt instructs the model not to assign PIC or classify chot/de_xuat", () => {
+  const p = buildClaudePrompt("x", "vi");
+  expect(p).toContain("KHÔNG gán người phụ trách (PIC)");
+  expect(p).not.toContain('"pic"');
+  expect(p.toLowerCase()).not.toContain("chot");
+  expect(p.toLowerCase()).not.toContain("de_xuat");
+});
+test("recheck prompt tells the model to keep pic unchanged and echo it back", () => {
+  const p = buildRecheckPrompt("gốc", '{"tasks":[]}', "vi");
+  expect(p).toContain("gốc");
+  expect(p).toContain('"pic"');
+  expect(p).toContain("GIỮ NGUYÊN");
 });
 test("gemini audio prompt asks for transcript", () => {
   expect(GEMINI_AUDIO_PROMPT.toLowerCase()).toContain("chữ");
