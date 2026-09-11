@@ -4,6 +4,8 @@
 - **Trạng thái:** Đã duyệt design trong chat, chờ review spec
 - **Repo:** VNGG-MeetingApp
 
+> **Sửa đổi 2026-09-11:** Bỏ nhãn **Chốt/Đề xuất** và cột **Reference**. Cột **PIC** vẫn giữ nhưng **model KHÔNG gán** — để trống cho người dùng **tự nhập tay** (vì với input text khó biết ai nói câu nào). Thêm cột **Note** (ghi chú ngắn) và **STT** (số thứ tự dòng). Bảng kết quả mới: **STT · Task · PIC · Deadline · Note**. (Code app đang có dùng schema cũ; cần cập nhật theo mục 4–6.)
+
 ## 1. Mục tiêu & người dùng
 
 Tóm tắt cuộc họp và tạo follow-up tasks nhanh, hiệu quả cho nhóm 2–5 người trong team HR.
@@ -34,20 +36,19 @@ Next.js (App Router) + Tailwind, chạy local (`npm run dev` → `localhost:3000
 - **Backend (Next.js API routes, chạy trên máy):** giữ 2 API key, nhận file, gọi Gemini và Greenode, trả kết quả. Key **không bao giờ** xuất hiện ở phía trình duyệt.
 - **Hai "bộ não" AI (chia vai):**
   - **Gemini (Google AI Studio):** đọc ảnh + nghe ghi âm → chữ.
-  - **Greenode (Claude):** chuẩn hoá ngôn ngữ + viết minutes + phân loại task.
+  - **Greenode:** chuẩn hoá ngôn ngữ + viết minutes + rút danh sách việc cần làm (task + deadline + note). **Không gán PIC** (người dùng tự nhập), không phân loại Chốt/Đề xuất.
 
 ## 4. Luồng dữ liệu
 
-1. **Nhận input:** text dùng thẳng; ảnh + ghi âm gửi Gemini → chữ; kèm list người tham gia & context (giúp gán đúng PIC, tránh nhầm tên).
+1. **Nhận input:** text dùng thẳng; ảnh + ghi âm gửi Gemini → chữ; kèm context tuỳ chọn (giúp model hiểu bối cảnh, không dùng để gán PIC nữa).
 2. **Gộp** tất cả thành **bản chữ thô** (đánh dấu nguồn từng đoạn: từ text nào / ảnh nào / đoạn ghi âm nào).
-3. **Gửi Claude** với prompt 4 bước:
+3. **Gửi model** với prompt 3 bước:
    - (0) Chuẩn hoá ngôn ngữ: dịch về 1 ngôn ngữ đã chọn + diễn giải slang/viết tắt/Gen Z (vd "chốt kèo", "hẻ").
    - (1) Viết meeting minutes (tóm tắt ý chính).
-   - (2) Phân loại task: **Chốt** / **Đề xuất**.
-   - (3) Với task đã chốt → tách **Task / PIC / Deadline**.
+   - (2) Rút **danh sách việc cần làm**, mỗi việc gồm: **task** (việc cần làm), **deadline** (nếu có), **note** (ghi chú ngắn nếu cần — vd "chưa chốt", "cần xác nhận"). **Không** gán PIC (để trống cho người dùng nhập), **không** phân loại Chốt/Đề xuất.
 4. **Kiểm tra kết quả** (backend): đủ field và đúng cấu trúc không. Thiếu → tự thử lại 1 lần.
-5. **Hiển thị:** tóm tắt + bảng follow-up (cột: Task / PIC / Loại(Chốt·Đề xuất) / Deadline / Reference).
-6. **Người dùng review:** sửa tay inline, hoặc bấm "Kiểm tra lại với AI" (Claude đọc lại bản gốc + bảng hiện tại, tự soát & sửa).
+5. **Hiển thị:** tóm tắt + bảng follow-up (cột: **STT / Task / PIC / Deadline / Note**). STT là số thứ tự dòng do giao diện tự đánh; **PIC để trống, người dùng tự nhập tay**.
+6. **Người dùng review:** sửa tay inline, hoặc bấm "Kiểm tra lại với AI" (model đọc lại bản gốc + bảng hiện tại, tự soát & sửa).
 7. **(tuỳ chọn) Xuất CSV.**
 
 ## 5. Cấu trúc dữ liệu kết quả
@@ -62,14 +63,16 @@ Backend trả về JSON có cấu trúc cố định để frontend dựng bản
     {
       "id": "string",
       "task": "string — việc cần làm",
-      "pic": "string — người phụ trách (có thể rỗng)",
-      "type": "chot | de_xuat",
+      "pic": "string — LUÔN rỗng từ model; người dùng tự nhập trên bảng",
       "deadline": "string — hạn (có thể rỗng)",
-      "reference": "string — trích đoạn trong bản gốc mà task dựa vào"
+      "note": "string — ghi chú ngắn (có thể rỗng)"
     }
   ]
 }
 ```
+
+- **STT** hiển thị trên bảng = số thứ tự dòng, giao diện tự đánh (1, 2, 3…), không nằm trong JSON.
+- **pic** có trong JSON để bảng/CSV có chỗ chứa, nhưng model luôn trả rỗng — người dùng gõ vào. Khi "Kiểm tra lại với AI", giữ nguyên `pic` người dùng đã nhập.
 
 ## 6. Giao diện & 3 trạng thái bắt buộc
 
