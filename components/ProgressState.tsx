@@ -16,9 +16,9 @@ export default function ProgressState({ phase, hasMedia = true }: ProgressStateP
   const activeIndex = steps.findIndex((s) => s.key === phase);
 
   return (
-    <div className="mx-auto flex w-full max-w-md flex-col items-center gap-6 py-24 text-center">
+    <div className="mx-auto flex w-full max-w-md flex-col items-center gap-6 rounded-2xl border border-[var(--border)] bg-[var(--surface)] px-8 py-16 text-center shadow-[0_1px_2px_rgba(16,24,40,0.05)]">
       <div
-        className="h-10 w-10 animate-spin rounded-full border-4 border-zinc-200 border-t-indigo-600 dark:border-zinc-700"
+        className="h-10 w-10 animate-spin rounded-full border-4 border-[var(--border)] border-t-[var(--accent)]"
         role="status"
         aria-label="Đang xử lý"
       />
@@ -30,10 +30,10 @@ export default function ProgressState({ phase, hasMedia = true }: ProgressStateP
               key={step.key}
               className={`flex items-center gap-2 ${
                 state === "active"
-                  ? "font-semibold text-zinc-900 dark:text-zinc-50"
+                  ? "font-semibold text-[var(--text)]"
                   : state === "done"
-                    ? "text-zinc-400 dark:text-zinc-600"
-                    : "text-zinc-300 dark:text-zinc-700"
+                    ? "text-[var(--accent)]"
+                    : "text-[var(--text-muted)]"
               }`}
             >
               <span aria-hidden="true">{state === "done" ? "✓" : state === "active" ? "→" : "•"}</span>

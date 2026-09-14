@@ -171,8 +171,26 @@ export default function Home() {
   const busy = phase !== null;
 
   return (
-    <div className="flex flex-1 flex-col bg-zinc-50 px-4 py-12 dark:bg-black sm:px-8">
-      <main className="mx-auto flex w-full flex-1 flex-col">
+    <div className="flex flex-1 flex-col px-4 py-10 sm:px-8 sm:py-14">
+      <main className="mx-auto flex w-full flex-1 flex-col gap-8">
+        <header className="mx-auto flex w-full max-w-[56rem] flex-col gap-1">
+          <div className="flex items-center gap-3">
+            <span
+              aria-hidden="true"
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--accent)] text-sm font-semibold text-white sm:h-9 sm:w-9"
+            >
+              B
+            </span>
+            <h1 className="text-2xl font-semibold tracking-tight text-[var(--text)] sm:text-[28px]">
+              Biên bản cuộc họp
+            </h1>
+          </div>
+          <p className="text-sm text-[var(--text-muted)]">
+            Dán ghi chú, tải ảnh chụp bảng hoặc file ghi âm — AI sẽ tổng hợp thành biên bản và danh sách việc
+            cần làm.
+          </p>
+        </header>
+
         {phase ? (
           <ProgressState phase={phase} hasMedia={input.files.length > 0} />
         ) : result ? (
@@ -185,11 +203,23 @@ export default function Home() {
             rechecking={rechecking}
           />
         ) : (
-          <div className="flex flex-col gap-4">
+          <div className="mx-auto flex w-full max-w-[56rem] flex-col gap-4">
             <InputPanel value={input} onChange={setInput} onSubmit={handleSubmit} busy={busy} />
             {error && (
-              <div className="mx-auto w-full max-w-2xl rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300">
-                {error}
+              <div className="flex items-start gap-2.5 rounded-xl border border-red-200 bg-[#FEF2F2] px-4 py-3 text-sm text-red-700">
+                <svg
+                  aria-hidden="true"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                  className="mt-0.5 h-4 w-4 shrink-0"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495ZM10 6a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 10 6Zm0 8a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                <span>{error}</span>
               </div>
             )}
           </div>

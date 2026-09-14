@@ -75,17 +75,7 @@ export default function InputPanel({ value, onChange, onSubmit, busy }: InputPan
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col gap-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-          Biên bản cuộc họp
-        </h1>
-        <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-          Dán ghi chú, tải ảnh chụp bảng hoặc file ghi âm — AI sẽ tổng hợp thành biên bản và danh sách việc
-          cần làm.
-        </p>
-      </div>
-
+    <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-[0_1px_2px_rgba(16,24,40,0.05)] sm:p-7">
       <div
         onDragOver={(e) => {
           e.preventDefault();
@@ -94,24 +84,40 @@ export default function InputPanel({ value, onChange, onSubmit, busy }: InputPan
         onDragLeave={() => setDragActive(false)}
         onDrop={handleDrop}
         className={`relative rounded-xl border-2 border-dashed p-4 transition-colors ${
-          dragActive
-            ? "border-indigo-500 bg-indigo-50 dark:bg-indigo-950/30"
-            : "border-zinc-300 dark:border-zinc-700"
+          dragActive ? "border-[var(--accent)] bg-[var(--accent-soft)]" : "border-[var(--border)]"
         }`}
       >
-        <textarea
-          value={value.text}
-          onChange={(e) => onChange({ ...value, text: e.target.value })}
-          placeholder={isEmpty ? "Kéo thả file hoặc dán ghi chú vào đây…" : "Ghi chú cuộc họp…"}
-          rows={8}
-          className="w-full resize-y bg-transparent text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none dark:text-zinc-100"
-        />
+        <div className="relative">
+          <textarea
+            value={value.text}
+            onChange={(e) => onChange({ ...value, text: e.target.value })}
+            placeholder={isEmpty ? "" : "Ghi chú cuộc họp…"}
+            rows={8}
+            className="min-h-[160px] w-full resize-y bg-transparent text-sm text-[var(--text)] placeholder:text-[var(--text-muted)] focus:outline-none"
+          />
+          {isEmpty && (
+            <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-2 px-4 text-center">
+              <svg
+                aria-hidden="true"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={1.5}
+                className="h-7 w-7 text-[var(--text-muted)]"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 16V4m0 0 4 4m-4-4-4 4" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" />
+              </svg>
+              <span className="text-sm text-[var(--text-muted)]">Kéo thả file hoặc dán ghi chú vào đây…</span>
+            </div>
+          )}
+        </div>
 
-        <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-zinc-200 pt-3 dark:border-zinc-800">
+        <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-[var(--border)] pt-3">
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className="rounded-md border border-zinc-300 px-3 py-1.5 text-xs font-medium text-zinc-700 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+            className="rounded-md border border-dashed border-[var(--border)] px-3 py-1.5 text-xs font-medium text-[var(--text)] transition-colors hover:bg-[var(--surface-2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
           >
             + Thêm ảnh / ghi âm / file .txt
           </button>
@@ -126,7 +132,7 @@ export default function InputPanel({ value, onChange, onSubmit, busy }: InputPan
               e.target.value = "";
             }}
           />
-          <span className="text-xs text-zinc-400">hoặc kéo thả file vào ô trên</span>
+          <span className="text-xs text-[var(--text-muted)]">hoặc kéo thả file vào ô trên</span>
         </div>
 
         {value.files.length > 0 && (
@@ -134,14 +140,14 @@ export default function InputPanel({ value, onChange, onSubmit, busy }: InputPan
             {value.files.map((f, i) => (
               <li
                 key={`${f.name}-${i}`}
-                className="flex items-center gap-2 rounded-full bg-zinc-100 px-3 py-1 text-xs text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
+                className="flex items-center gap-2 rounded-full bg-[var(--surface-2)] px-3 py-1 text-xs text-[var(--text)]"
               >
                 <span className="max-w-[160px] truncate">{f.name}</span>
                 <button
                   type="button"
                   onClick={() => removeFile(i)}
                   aria-label={`Xoá ${f.name}`}
-                  className="text-zinc-400 transition-colors hover:text-red-500"
+                  className="text-[var(--text-muted)] transition-colors hover:text-red-500"
                 >
                   ×
                 </button>
@@ -153,21 +159,21 @@ export default function InputPanel({ value, onChange, onSubmit, busy }: InputPan
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <label className="flex flex-col gap-1.5 text-sm">
-          <span className="font-medium text-zinc-700 dark:text-zinc-300">Người tham gia</span>
+          <span className="font-medium text-[var(--text)]">Người tham gia</span>
           <input
             value={value.participants}
             onChange={(e) => onChange({ ...value, participants: e.target.value })}
             placeholder="An, Bình, Chi…"
-            className="rounded-md border border-zinc-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900"
+            className="rounded-lg border border-[var(--border)] px-3 py-2 text-sm text-[var(--text)] transition-colors focus:border-[var(--accent)] focus:outline-none focus:ring-[3px] focus:ring-[var(--ring)]"
           />
         </label>
         <label className="flex flex-col gap-1.5 text-sm">
-          <span className="font-medium text-zinc-700 dark:text-zinc-300">Bối cảnh (tuỳ chọn)</span>
+          <span className="font-medium text-[var(--text)]">Bối cảnh (tuỳ chọn)</span>
           <input
             value={value.context}
             onChange={(e) => onChange({ ...value, context: e.target.value })}
             placeholder="Họp sprint review, dự án X…"
-            className="rounded-md border border-zinc-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900"
+            className="rounded-lg border border-[var(--border)] px-3 py-2 text-sm text-[var(--text)] transition-colors focus:border-[var(--accent)] focus:outline-none focus:ring-[3px] focus:ring-[var(--ring)]"
           />
         </label>
       </div>
@@ -176,7 +182,7 @@ export default function InputPanel({ value, onChange, onSubmit, busy }: InputPan
         type="button"
         onClick={onSubmit}
         disabled={!canSubmit}
-        className="inline-flex items-center justify-center gap-2 rounded-md bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-indigo-500 disabled:cursor-not-allowed disabled:bg-zinc-300 disabled:text-zinc-500 dark:disabled:bg-zinc-800 dark:disabled:text-zinc-500"
+        className="inline-flex items-center justify-center gap-2 rounded-lg bg-[var(--accent)] px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--accent-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--ring)] active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-[var(--border)] disabled:text-[var(--text-muted)] disabled:active:scale-100"
       >
         {busy ? "Đang xử lý…" : "Tạo biên bản"}
       </button>
