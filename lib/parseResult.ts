@@ -16,6 +16,7 @@ export function parseResult(raw: string): MeetingResult {
   try { obj = JSON.parse(json); } catch { throw new Error("INVALID_RESULT"); }
   if (!isMeetingResult(obj)) throw new Error("INVALID_RESULT");
   const r = obj as MeetingResult;
+  r.title = r.title ?? "";
   r.tasks = r.tasks.map((t, i): Task => ({
     id: t.id?.toString() || String(i + 1),
     task: t.task, pic: t.pic ?? "",

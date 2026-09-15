@@ -104,7 +104,7 @@ export default function Home() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error ?? "UNKNOWN");
-      setResult({ summary: data.summary, language: data.language, tasks: data.tasks });
+      setResult({ title: data.title ?? "", summary: data.summary, language: data.language, tasks: data.tasks });
       setRawText(typeof data.rawText === "string" ? data.rawText : "");
       setPhase(null);
       toast.success("Đã tạo biên bản cuộc họp.");
@@ -125,6 +125,10 @@ export default function Home() {
     );
   }
 
+  function handleTitleEdit(value: string) {
+    setResult((prev) => (prev ? { ...prev, title: value } : prev));
+  }
+
   async function handleRecheck() {
     if (!result || rawText === null) return;
     setRechecking(true);
@@ -136,7 +140,7 @@ export default function Home() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error ?? "UNKNOWN");
-      setResult({ summary: data.summary, language: data.language, tasks: data.tasks });
+      setResult({ title: data.title ?? "", summary: data.summary, language: data.language, tasks: data.tasks });
       toast.success("Đã cập nhật biên bản sau khi kiểm tra lại.");
     } catch (e) {
       toast.error(friendlyMessage(errorCodeFrom(e)));
@@ -197,6 +201,7 @@ export default function Home() {
           <ResultView
             result={result}
             onEdit={handleEdit}
+            onTitleEdit={handleTitleEdit}
             onRecheck={handleRecheck}
             onExportCsv={handleExportCsv}
             onReset={handleReset}

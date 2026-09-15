@@ -1,12 +1,21 @@
 import { expect, test } from "vitest";
 import { parseResult } from "../parseResult";
 
-const good = '{"summary":"tóm tắt","language":"vi","tasks":[{"task":"Gửi JD","pic":"An","deadline":"T6","note":"gấp"}]}';
+const good = '{"title":"Họp kickoff dự án","summary":"tóm tắt","language":"vi","tasks":[{"task":"Gửi JD","pic":"An","deadline":"T6","note":"gấp"}]}';
 
 test("parses plain JSON", () => {
   const r = parseResult(good);
   expect(r.tasks[0].task).toBe("Gửi JD");
   expect(r.tasks[0].id).toBeTruthy();
+});
+test("keeps title when the reply includes one", () => {
+  const r = parseResult(good);
+  expect(r.title).toBe("Họp kickoff dự án");
+});
+test("defaults title to an empty string when the reply omits it", () => {
+  const noTitle = '{"summary":"s","language":"vi","tasks":[{"task":"Gửi JD"}]}';
+  const r = parseResult(noTitle);
+  expect(r.title).toBe("");
 });
 test("parses JSON wrapped in prose and code fences", () => {
   const r = parseResult("Đây là kết quả:\n```json\n" + good + "\n```\nHết.");

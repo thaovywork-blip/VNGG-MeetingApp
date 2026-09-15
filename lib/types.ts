@@ -1,5 +1,5 @@
 export interface Task { id: string; task: string; pic: string; deadline: string; note: string; }
-export interface MeetingResult { summary: string; language: string; tasks: Task[]; }
+export interface MeetingResult { title: string; summary: string; language: string; tasks: Task[]; }
 export interface ProcessInput { text: string; participants: string; context: string; language: string; }
 
 export function isMeetingResult(x: unknown): x is MeetingResult {

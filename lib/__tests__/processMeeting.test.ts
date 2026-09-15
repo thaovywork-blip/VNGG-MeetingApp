@@ -1,7 +1,7 @@
 import { expect, test, vi } from "vitest";
 import { processMeeting } from "../processMeeting";
 
-const good = '{"summary":"s","language":"vi","tasks":[{"task":"t","deadline":"","note":"r"}]}';
+const good = '{"title":"Họp nhóm","summary":"s","language":"vi","tasks":[{"task":"t","deadline":"","note":"r"}]}';
 
 test("transcribes media, calls model, returns parsed result", async () => {
   const transcribe = vi.fn(async () => "text từ ảnh");
