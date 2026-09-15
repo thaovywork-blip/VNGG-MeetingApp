@@ -13,7 +13,10 @@ export interface MeetingRecord {
   rawText: string; // to support Re-check after reopening
 }
 
-export type MeetingSummary = Pick<MeetingRecord, "id" | "title" | "date" | "savedAt">;
+export type MeetingSummary = Pick<MeetingRecord, "id" | "title" | "date" | "savedAt"> & {
+  // Lowercased title + summary + task/note text, for client-side search filtering.
+  searchText: string;
+};
 
 const ID_PATTERN = /^[A-Za-z0-9_-]+$/;
 
@@ -70,7 +73,14 @@ export async function listMeetings(): Promise<MeetingSummary[]> {
     try {
       const raw = await readFile(fileFor(id), "utf-8");
       const rec = JSON.parse(raw) as MeetingRecord;
-      records.push({ id: rec.id, title: rec.title, date: rec.date, savedAt: rec.savedAt });
+      const searchText = [
+        rec.title,
+        rec.summary,
+        ...(rec.tasks ?? []).map((t) => `${t.task} ${t.note || ""}`),
+      ]
+        .join(" ")
+        .toLowerCase();
+      records.push({ id: rec.id, title: rec.title, date: rec.date, savedAt: rec.savedAt, searchText });
     } catch {
       // Skip unreadable/corrupt files rather than failing the whole listing.
     }

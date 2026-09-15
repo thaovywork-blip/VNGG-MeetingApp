@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { formatDateLong, formatDateTimeLong } from "@/lib/formatDate";
 import type { MeetingSummary } from "@/lib/meetingStore";
 
@@ -12,6 +13,12 @@ interface SavedMeetingsProps {
 }
 
 export default function SavedMeetings({ meetings, loading, onOpen, onDelete, onBack }: SavedMeetingsProps) {
+  const [query, setQuery] = useState("");
+  const trimmedQuery = query.trim().toLowerCase();
+  const filtered = trimmedQuery
+    ? meetings.filter((m) => m.searchText.includes(trimmedQuery))
+    : meetings;
+
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
       <div className="flex items-center justify-between">
@@ -25,14 +32,39 @@ export default function SavedMeetings({ meetings, loading, onOpen, onDelete, onB
         </button>
       </div>
 
+      <div className="relative">
+        <svg
+          aria-hidden="true"
+          viewBox="0 0 20 20"
+          fill="currentColor"
+          className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--text-muted)]"
+        >
+          <path
+            fillRule="evenodd"
+            d="M9 3.5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11ZM2 9a7 7 0 1 1 12.452 4.391l3.328 3.329a.75.75 0 1 1-1.06 1.06l-3.329-3.328A7 7 0 0 1 2 9Z"
+            clipRule="evenodd"
+          />
+        </svg>
+        <input
+          type="text"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search saved meetings…"
+          aria-label="Search saved meetings"
+          className="w-full rounded-lg border border-[var(--border)] bg-[var(--surface)] py-2 pl-9 pr-3 text-sm text-[var(--text)] transition-colors focus:border-[var(--accent)] focus:outline-none focus:ring-[3px] focus:ring-[var(--ring)]"
+        />
+      </div>
+
       <div className="overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface)] shadow-[0_1px_2px_rgba(16,24,40,0.05)]">
         {loading ? (
           <p className="px-4 py-6 text-center text-sm text-[var(--text-muted)]">Loading…</p>
         ) : meetings.length === 0 ? (
           <p className="px-4 py-6 text-center text-sm text-[var(--text-muted)]">No saved meetings yet.</p>
+        ) : filtered.length === 0 ? (
+          <p className="px-4 py-6 text-center text-sm text-[var(--text-muted)]">No meetings match your search.</p>
         ) : (
           <ul className="divide-y divide-[var(--border)]">
-            {meetings.map((m) => (
+            {filtered.map((m) => (
               <li key={m.id} className="group flex items-center gap-3 px-4 py-3 transition-colors hover:bg-[var(--surface-2)]">
                 <button
                   type="button"

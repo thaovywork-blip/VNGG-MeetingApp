@@ -49,6 +49,9 @@ test("save -> get -> list -> delete round-trip", async () => {
   expect(list).toHaveLength(1);
   expect(list[0].id).toBe(saved.id);
   expect(list[0].title).toBe("Sprint review");
+  expect(list[0].searchText).toContain("sprint review");
+  expect(list[0].searchText).toContain("we reviewed the sprint");
+  expect(list[0].searchText).toContain("follow up");
 
   await deleteMeeting(saved.id);
   expect(await getMeeting(saved.id)).toBeNull();

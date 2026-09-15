@@ -11,11 +11,12 @@ test("claude prompt embeds raw text, language, JSON schema and the steps", () =>
   expect(p.toLowerCase()).toContain("title");
   expect(p.toLowerCase()).toContain("normalize the language");
 });
-test("claude prompt instructs a detailed, comprehensive summary of the action items", () => {
+test("claude prompt instructs a concise-but-complete summary as tight bullet points", () => {
   const p = buildClaudePrompt("x", "en");
   expect(p.toLowerCase()).toContain("action items");
-  expect(p.toLowerCase()).toContain("detailed");
-  expect(p.toLowerCase()).toContain("comprehensive");
+  expect(p.toLowerCase()).toContain("concise");
+  expect(p.toLowerCase()).toContain("complete");
+  expect(p.toLowerCase()).toContain("bullet");
 });
 test("claude prompt instructs the model not to assign PIC or classify decided/proposed", () => {
   const p = buildClaudePrompt("x", "en");
@@ -33,10 +34,11 @@ test("recheck prompt schema includes title and instructs the model to keep or re
   expect(p).toContain('"title"');
   expect(p.toLowerCase()).toContain("title");
 });
-test("recheck prompt still requires a detailed, comprehensive summary", () => {
+test("recheck prompt still requires a concise-but-complete summary as tight bullet points", () => {
   const p = buildRecheckPrompt("original", '{"tasks":[]}', "en");
-  expect(p.toLowerCase()).toContain("detailed");
-  expect(p.toLowerCase()).toContain("comprehensive");
+  expect(p.toLowerCase()).toContain("concise");
+  expect(p.toLowerCase()).toContain("complete");
+  expect(p.toLowerCase()).toContain("bullet");
 });
 test("gemini audio prompt asks for a transcript", () => {
   expect(GEMINI_AUDIO_PROMPT.toLowerCase()).toContain("transcript");

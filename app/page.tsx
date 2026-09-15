@@ -302,6 +302,35 @@ export default function Home() {
           </p>
         </header>
 
+        <nav className="mx-auto flex w-full max-w-[56rem] items-center gap-1 border-b border-[var(--border)]">
+          <button
+            type="button"
+            onClick={handleReset}
+            aria-current={view !== "saved" ? "page" : undefined}
+            className={`relative px-4 py-2.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] ${
+              view !== "saved" ? "text-[var(--accent)]" : "text-[var(--text-muted)] hover:text-[var(--text)]"
+            }`}
+          >
+            New meeting
+            {view !== "saved" && (
+              <span aria-hidden="true" className="absolute inset-x-0 -bottom-px h-0.5 bg-[var(--accent)]" />
+            )}
+          </button>
+          <button
+            type="button"
+            onClick={handleShowSaved}
+            aria-current={view === "saved" ? "page" : undefined}
+            className={`relative px-4 py-2.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] ${
+              view === "saved" ? "text-[var(--accent)]" : "text-[var(--text-muted)] hover:text-[var(--text)]"
+            }`}
+          >
+            Saved meetings
+            {view === "saved" && (
+              <span aria-hidden="true" className="absolute inset-x-0 -bottom-px h-0.5 bg-[var(--accent)]" />
+            )}
+          </button>
+        </nav>
+
         {phase ? (
           <ProgressState phase={phase} hasMedia={input.files.length > 0} />
         ) : view === "saved" ? (
@@ -331,15 +360,6 @@ export default function Home() {
         ) : (
           <div className="mx-auto flex w-full max-w-[56rem] flex-col gap-4">
             <InputPanel value={input} onChange={setInput} onSubmit={handleSubmit} busy={busy} />
-            <div className="flex justify-center">
-              <button
-                type="button"
-                onClick={handleShowSaved}
-                className="rounded-md px-2 py-1 text-xs font-medium text-[var(--text-muted)] transition-colors hover:text-[var(--accent-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
-              >
-                Saved meetings
-              </button>
-            </div>
             {error && (
               <div className="flex items-start gap-2.5 rounded-xl border border-red-200 bg-[#FEF2F2] px-4 py-3 text-sm text-red-700">
                 <svg
