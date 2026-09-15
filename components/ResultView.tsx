@@ -1,11 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { formatDateLong } from "@/lib/formatDate";
 import type { MeetingResult, Task } from "@/lib/types";
 import TaskTable from "./TaskTable";
 
 interface ResultViewProps {
   result: MeetingResult;
+  date?: string;
   onEdit: (id: string, field: keyof Task, value: string) => void;
   onTitleEdit: (value: string) => void;
   onDeleteTask: (id: string) => void;
@@ -13,15 +15,15 @@ interface ResultViewProps {
   onRecheck: () => void;
   onExportCsv: () => void;
   onReset: () => void;
+  onSave: () => void;
   rechecking: boolean;
-}
-
-function todayEn(): string {
-  return new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+  saving: boolean;
+  saved: boolean;
 }
 
 export default function ResultView({
   result,
+  date,
   onEdit,
   onTitleEdit,
   onDeleteTask,
@@ -29,7 +31,10 @@ export default function ResultView({
   onRecheck,
   onExportCsv,
   onReset,
+  onSave,
   rechecking,
+  saving,
+  saved,
 }: ResultViewProps) {
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
@@ -45,7 +50,7 @@ export default function ResultView({
 
       <div className="flex flex-col gap-1">
         <EditableTitle value={result.title} onCommit={onTitleEdit} />
-        <p className="text-xs text-[var(--text-muted)]">{todayEn()}</p>
+        <p className="text-xs text-[var(--text-muted)]">{formatDateLong(date)}</p>
       </div>
 
       <section className="relative overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface)] py-6 pl-7 pr-6 shadow-[0_1px_2px_rgba(16,24,40,0.05)] sm:py-7 sm:pl-8 sm:pr-7">
@@ -58,6 +63,14 @@ export default function ResultView({
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h2 className="text-sm font-semibold text-[var(--text)]">Action items</h2>
           <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={onSave}
+              disabled={saving}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-xs font-medium text-[var(--text)] transition-colors hover:bg-[var(--surface-2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {saving ? "Saving…" : saved ? "Saved ✓" : "Save"}
+            </button>
             <button
               type="button"
               onClick={onRecheck}

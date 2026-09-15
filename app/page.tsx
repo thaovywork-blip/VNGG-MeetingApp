@@ -5,8 +5,12 @@ import { toast } from "sonner";
 import InputPanel, { type InputValue } from "@/components/InputPanel";
 import ProgressState, { type ProgressPhase } from "@/components/ProgressState";
 import ResultView from "@/components/ResultView";
+import SavedMeetings from "@/components/SavedMeetings";
 import { tasksToCsv } from "@/lib/csv";
+import type { MeetingSummary } from "@/lib/meetingStore";
 import type { MeetingResult, Task } from "@/lib/types";
+
+type View = "input" | "result" | "saved";
 
 const LANGUAGE = "en";
 const EMPTY_INPUT: InputValue = { text: "", participants: "", context: "", files: [] };
@@ -84,6 +88,12 @@ export default function Home() {
   const [result, setResult] = useState<MeetingResult | null>(null);
   const [rawText, setRawText] = useState<string | null>(null);
   const [rechecking, setRechecking] = useState(false);
+  const [view, setView] = useState<View>("input");
+  const [currentMeetingId, setCurrentMeetingId] = useState<string | null>(null);
+  const [currentDate, setCurrentDate] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [savedMeetings, setSavedMeetings] = useState<MeetingSummary[]>([]);
+  const [savedLoading, setSavedLoading] = useState(false);
 
   async function handleSubmit() {
     setError(null);
@@ -106,6 +116,9 @@ export default function Home() {
       if (!res.ok) throw new Error(data?.error ?? "UNKNOWN");
       setResult({ title: data.title ?? "", summary: data.summary, language: data.language, tasks: data.tasks });
       setRawText(typeof data.rawText === "string" ? data.rawText : "");
+      setCurrentMeetingId(null);
+      setCurrentDate(new Date().toISOString());
+      setView("result");
       setPhase(null);
       toast.success("Meeting minutes generated.");
     } catch (e) {
@@ -186,6 +199,84 @@ export default function Home() {
     setRawText(null);
     setError(null);
     setPhase(null);
+    setCurrentMeetingId(null);
+    setCurrentDate(null);
+    setView("input");
+  }
+
+  async function handleSave() {
+    if (!result) return;
+    setSaving(true);
+    try {
+      const res = await fetch("/api/meetings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: currentMeetingId ?? undefined,
+          date: currentDate ?? new Date().toISOString(),
+          title: result.title,
+          summary: result.summary,
+          language: result.language,
+          tasks: result.tasks,
+          rawText: rawText ?? "",
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error ?? "UNKNOWN");
+      setCurrentMeetingId(data.id);
+      toast.success("Saved");
+    } catch (e) {
+      toast.error(friendlyMessage(errorCodeFrom(e)));
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function loadSavedMeetings() {
+    setSavedLoading(true);
+    try {
+      const res = await fetch("/api/meetings");
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error ?? "UNKNOWN");
+      setSavedMeetings(data);
+    } catch (e) {
+      toast.error(friendlyMessage(errorCodeFrom(e)));
+    } finally {
+      setSavedLoading(false);
+    }
+  }
+
+  function handleShowSaved() {
+    setView("saved");
+    void loadSavedMeetings();
+  }
+
+  async function handleOpenSaved(id: string) {
+    try {
+      const res = await fetch(`/api/meetings/${id}`);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error ?? "UNKNOWN");
+      setResult({ title: data.title ?? "", summary: data.summary, language: data.language, tasks: data.tasks });
+      setRawText(typeof data.rawText === "string" ? data.rawText : "");
+      setCurrentMeetingId(data.id);
+      setCurrentDate(data.date ?? null);
+      setError(null);
+      setView("result");
+    } catch (e) {
+      toast.error(friendlyMessage(errorCodeFrom(e)));
+    }
+  }
+
+  async function handleDeleteSaved(id: string) {
+    try {
+      const res = await fetch(`/api/meetings/${id}`, { method: "DELETE" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error ?? "UNKNOWN");
+      toast.success("Deleted");
+      await loadSavedMeetings();
+    } catch (e) {
+      toast.error(friendlyMessage(errorCodeFrom(e)));
+    }
   }
 
   const busy = phase !== null;
@@ -213,9 +304,18 @@ export default function Home() {
 
         {phase ? (
           <ProgressState phase={phase} hasMedia={input.files.length > 0} />
-        ) : result ? (
+        ) : view === "saved" ? (
+          <SavedMeetings
+            meetings={savedMeetings}
+            loading={savedLoading}
+            onOpen={handleOpenSaved}
+            onDelete={handleDeleteSaved}
+            onBack={handleReset}
+          />
+        ) : view === "result" && result ? (
           <ResultView
             result={result}
+            date={currentDate ?? undefined}
             onEdit={handleEdit}
             onTitleEdit={handleTitleEdit}
             onDeleteTask={handleDeleteTask}
@@ -223,11 +323,23 @@ export default function Home() {
             onRecheck={handleRecheck}
             onExportCsv={handleExportCsv}
             onReset={handleReset}
+            onSave={handleSave}
             rechecking={rechecking}
+            saving={saving}
+            saved={currentMeetingId !== null}
           />
         ) : (
           <div className="mx-auto flex w-full max-w-[56rem] flex-col gap-4">
             <InputPanel value={input} onChange={setInput} onSubmit={handleSubmit} busy={busy} />
+            <div className="flex justify-center">
+              <button
+                type="button"
+                onClick={handleShowSaved}
+                className="rounded-md px-2 py-1 text-xs font-medium text-[var(--text-muted)] transition-colors hover:text-[var(--accent-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+              >
+                Saved meetings
+              </button>
+            </div>
             {error && (
               <div className="flex items-start gap-2.5 rounded-xl border border-red-200 bg-[#FEF2F2] px-4 py-3 text-sm text-red-700">
                 <svg

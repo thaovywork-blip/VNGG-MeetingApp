@@ -43,3 +43,6 @@ next-env.d.ts
 
 # SDD scratch workspace
 .superpowers/
+
+# saved meetings (local persistence)
+/data/
