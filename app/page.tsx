@@ -180,7 +180,7 @@ export default function Home() {
 
   function handleExportCsv() {
     if (!result) return;
-    const csv = tasksToCsv(result);
+    const csv = tasksToCsv(result, currentDate ?? undefined);
     // Leading BOM keeps special characters readable when the CSV is opened in Excel.
     const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
