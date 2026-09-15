@@ -8,6 +8,8 @@ interface ResultViewProps {
   result: MeetingResult;
   onEdit: (id: string, field: keyof Task, value: string) => void;
   onTitleEdit: (value: string) => void;
+  onDeleteTask: (id: string) => void;
+  onAddTask: () => void;
   onRecheck: () => void;
   onExportCsv: () => void;
   onReset: () => void;
@@ -26,6 +28,8 @@ export default function ResultView({
   result,
   onEdit,
   onTitleEdit,
+  onDeleteTask,
+  onAddTask,
   onRecheck,
   onExportCsv,
   onReset,
@@ -76,7 +80,7 @@ export default function ResultView({
           </div>
         </div>
 
-        <TaskTable tasks={result.tasks} onEdit={onEdit} />
+        <TaskTable tasks={result.tasks} onEdit={onEdit} onDelete={onDeleteTask} onAdd={onAddTask} />
       </div>
     </div>
   );

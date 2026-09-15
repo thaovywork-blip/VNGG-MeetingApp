@@ -129,6 +129,22 @@ export default function Home() {
     setResult((prev) => (prev ? { ...prev, title: value } : prev));
   }
 
+  function handleDeleteTask(id: string) {
+    setResult((prev) => (prev ? { ...prev, tasks: prev.tasks.filter((t) => t.id !== id) } : prev));
+  }
+
+  function handleAddTask() {
+    setResult((prev) => {
+      if (!prev) return prev;
+      const id =
+        typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+          ? crypto.randomUUID()
+          : String(Date.now()) + Math.random().toString(36).slice(2);
+      const newTask: Task = { id, task: "", pic: "", deadline: "", note: "" };
+      return { ...prev, tasks: [...prev.tasks, newTask] };
+    });
+  }
+
   async function handleRecheck() {
     if (!result || rawText === null) return;
     setRechecking(true);
@@ -202,6 +218,8 @@ export default function Home() {
             result={result}
             onEdit={handleEdit}
             onTitleEdit={handleTitleEdit}
+            onDeleteTask={handleDeleteTask}
+            onAddTask={handleAddTask}
             onRecheck={handleRecheck}
             onExportCsv={handleExportCsv}
             onReset={handleReset}
