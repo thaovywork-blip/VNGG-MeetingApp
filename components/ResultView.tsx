@@ -56,7 +56,9 @@ export default function ResultView({
       <section className="relative overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface)] py-6 pl-7 pr-6 shadow-[0_1px_2px_rgba(16,24,40,0.05)] sm:py-7 sm:pl-8 sm:pr-7">
         <span aria-hidden="true" className="absolute inset-y-0 left-0 w-[3px] bg-[var(--accent)]" />
         <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">Minutes</p>
-        <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-[var(--text)]">{result.summary}</p>
+        <div className="mt-3">
+          <SummaryContent summary={result.summary} />
+        </div>
       </section>
 
       <div className="flex flex-col gap-3">
@@ -91,6 +93,104 @@ export default function ResultView({
 
         <TaskTable tasks={result.tasks} onEdit={onEdit} onDelete={onDeleteTask} onAdd={onAddTask} />
       </div>
+    </div>
+  );
+}
+
+type SummaryBlock =
+  | { type: "heading"; text: string }
+  | { type: "bullets"; items: string[] }
+  | { type: "paragraph"; text: string };
+
+const BULLET_PREFIXES = ["- ", "* ", "• "];
+
+function parseSummaryBlocks(summary: string): SummaryBlock[] {
+  const lines = summary.split("\n");
+  const blocks: SummaryBlock[] = [];
+
+  for (const rawLine of lines) {
+    const line = rawLine.trim();
+    if (!line) continue;
+
+    if (line.startsWith("## ")) {
+      blocks.push({ type: "heading", text: line.slice(3).trim() });
+      continue;
+    }
+
+    const bulletPrefix = BULLET_PREFIXES.find((prefix) => line.startsWith(prefix));
+    if (bulletPrefix) {
+      const item = line.slice(bulletPrefix.length).trim();
+      const last = blocks[blocks.length - 1];
+      if (last && last.type === "bullets") {
+        last.items.push(item);
+      } else {
+        blocks.push({ type: "bullets", items: [item] });
+      }
+      continue;
+    }
+
+    blocks.push({ type: "paragraph", text: line });
+  }
+
+  return blocks;
+}
+
+interface SummaryContentProps {
+  summary: string;
+}
+
+// Renders the plain-string `summary` field, which the AI writes using a lightweight
+// markdown-style convention ("## " topic headings, "- " bullet points). Falls back to
+// the older plain-text rendering when neither marker is present, so summaries generated
+// before this convention still display readably.
+function SummaryContent({ summary }: SummaryContentProps) {
+  const hasStructure = summary.split("\n").some((line) => {
+    const trimmed = line.trim();
+    return trimmed.startsWith("## ") || BULLET_PREFIXES.some((prefix) => trimmed.startsWith(prefix));
+  });
+
+  if (!hasStructure) {
+    return <p className="whitespace-pre-line text-sm leading-relaxed text-[var(--text)]">{summary}</p>;
+  }
+
+  const blocks = parseSummaryBlocks(summary);
+
+  return (
+    <div className="flex flex-col gap-2">
+      {blocks.map((block, index) => {
+        if (block.type === "heading") {
+          return (
+            <h3
+              key={index}
+              className={`text-sm font-semibold tracking-wide text-[var(--accent-hover)] ${index > 0 ? "mt-3" : ""}`}
+            >
+              {block.text}
+            </h3>
+          );
+        }
+        if (block.type === "bullets") {
+          return (
+            <ul key={index} className="flex flex-col gap-1.5 pl-1">
+              {block.items.map((item, itemIndex) => (
+                <li
+                  key={itemIndex}
+                  className="flex gap-2 text-sm leading-relaxed text-[var(--text)]"
+                >
+                  <span aria-hidden="true" className="text-[var(--accent)]">
+                    •
+                  </span>
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          );
+        }
+        return (
+          <p key={index} className="text-sm leading-relaxed text-[var(--text)]">
+            {block.text}
+          </p>
+        );
+      })}
     </div>
   );
 }

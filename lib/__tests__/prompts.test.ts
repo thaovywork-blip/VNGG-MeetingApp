@@ -18,6 +18,12 @@ test("claude prompt instructs a concise-but-complete summary as tight bullet poi
   expect(p.toLowerCase()).toContain("complete");
   expect(p.toLowerCase()).toContain("bullet");
 });
+test("claude prompt instructs the summary to be grouped by topic headings and bullet points", () => {
+  const p = buildClaudePrompt("x", "en");
+  expect(p.toLowerCase()).toContain("grouped by topic");
+  expect(p).toContain('"## "');
+  expect(p).toContain('"- "');
+});
 test("claude prompt instructs the model not to assign PIC or classify decided/proposed", () => {
   const p = buildClaudePrompt("x", "en");
   expect(p.toLowerCase()).toContain("do not assign a person-in-charge (pic)");
@@ -39,6 +45,12 @@ test("recheck prompt still requires a concise-but-complete summary as tight bull
   expect(p.toLowerCase()).toContain("concise");
   expect(p.toLowerCase()).toContain("complete");
   expect(p.toLowerCase()).toContain("bullet");
+});
+test("recheck prompt still requires the summary grouped by topic headings and bullet points", () => {
+  const p = buildRecheckPrompt("original", '{"tasks":[]}', "en");
+  expect(p.toLowerCase()).toContain("grouped by topic");
+  expect(p).toContain('"## "');
+  expect(p).toContain('"- "');
 });
 test("gemini audio prompt asks for a transcript", () => {
   expect(GEMINI_AUDIO_PROMPT.toLowerCase()).toContain("transcript");
