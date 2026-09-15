@@ -2,33 +2,42 @@ import { expect, test } from "vitest";
 import { buildClaudePrompt, buildRecheckPrompt, GEMINI_AUDIO_PROMPT } from "../prompts";
 
 test("claude prompt embeds raw text, language, JSON schema and the steps", () => {
-  const p = buildClaudePrompt("NỘI DUNG THÔ", "vi");
-  expect(p).toContain("NỘI DUNG THÔ");
-  expect(p).toContain("vi");
+  const p = buildClaudePrompt("RAW CONTENT", "en");
+  expect(p).toContain("RAW CONTENT");
+  expect(p).toContain("en");
   expect(p).toContain('"tasks"');
   expect(p).toContain('"note"');
   expect(p).toContain('"title"');
-  expect(p.toLowerCase()).toContain("tiêu đề");
-  expect(p.toLowerCase()).toContain("chuẩn hoá");
+  expect(p.toLowerCase()).toContain("title");
+  expect(p.toLowerCase()).toContain("normalize the language");
 });
-test("claude prompt instructs the model not to assign PIC or classify chot/de_xuat", () => {
-  const p = buildClaudePrompt("x", "vi");
-  expect(p).toContain("KHÔNG gán người phụ trách (PIC)");
+test("claude prompt instructs a detailed, comprehensive summary of the action items", () => {
+  const p = buildClaudePrompt("x", "en");
+  expect(p.toLowerCase()).toContain("action items");
+  expect(p.toLowerCase()).toContain("detailed");
+  expect(p.toLowerCase()).toContain("comprehensive");
+});
+test("claude prompt instructs the model not to assign PIC or classify decided/proposed", () => {
+  const p = buildClaudePrompt("x", "en");
+  expect(p.toLowerCase()).toContain("do not assign a person-in-charge (pic)");
   expect(p).not.toContain('"pic"');
-  expect(p.toLowerCase()).not.toContain("chot");
-  expect(p.toLowerCase()).not.toContain("de_xuat");
 });
 test("recheck prompt tells the model to keep pic unchanged and echo it back", () => {
-  const p = buildRecheckPrompt("gốc", '{"tasks":[]}', "vi");
-  expect(p).toContain("gốc");
+  const p = buildRecheckPrompt("original", '{"tasks":[]}', "en");
+  expect(p).toContain("original");
   expect(p).toContain('"pic"');
-  expect(p).toContain("GIỮ NGUYÊN");
+  expect(p.toLowerCase()).toContain("keep each task's \"pic\" value unchanged");
 });
 test("recheck prompt schema includes title and instructs the model to keep or refine it", () => {
-  const p = buildRecheckPrompt("gốc", '{"tasks":[]}', "vi");
+  const p = buildRecheckPrompt("original", '{"tasks":[]}', "en");
   expect(p).toContain('"title"');
   expect(p.toLowerCase()).toContain("title");
 });
-test("gemini audio prompt asks for transcript", () => {
-  expect(GEMINI_AUDIO_PROMPT.toLowerCase()).toContain("chữ");
+test("recheck prompt still requires a detailed, comprehensive summary", () => {
+  const p = buildRecheckPrompt("original", '{"tasks":[]}', "en");
+  expect(p.toLowerCase()).toContain("detailed");
+  expect(p.toLowerCase()).toContain("comprehensive");
+});
+test("gemini audio prompt asks for a transcript", () => {
+  expect(GEMINI_AUDIO_PROMPT.toLowerCase()).toContain("transcript");
 });

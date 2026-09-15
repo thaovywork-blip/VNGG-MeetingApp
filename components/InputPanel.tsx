@@ -46,7 +46,7 @@ export default function InputPanel({ value, onChange, onSubmit, busy }: InputPan
 
     for (const f of incoming) {
       if (f.size > MAX_FILE_SIZE) {
-        toast.error(`File "${f.name}" quá lớn (tối đa 20MB)`);
+        toast.error(`File "${f.name}" is too large (max 20MB)`);
         continue;
       }
       if (isTextFile(f)) {
@@ -58,7 +58,7 @@ export default function InputPanel({ value, onChange, onSubmit, busy }: InputPan
         mediaFiles.push(f);
         continue;
       }
-      toast.error(`Định dạng không hỗ trợ: ${f.name}`);
+      toast.error(`Unsupported file type: ${f.name}`);
     }
 
     onChange({ ...value, text: appendedText, files: [...value.files, ...mediaFiles] });
@@ -91,7 +91,7 @@ export default function InputPanel({ value, onChange, onSubmit, busy }: InputPan
           <textarea
             value={value.text}
             onChange={(e) => onChange({ ...value, text: e.target.value })}
-            placeholder={isEmpty ? "" : "Ghi chú cuộc họp…"}
+            placeholder={isEmpty ? "" : "Meeting notes…"}
             rows={8}
             className="min-h-[160px] w-full resize-y bg-transparent text-sm text-[var(--text)] placeholder:text-[var(--text-muted)] focus:outline-none"
           />
@@ -108,7 +108,7 @@ export default function InputPanel({ value, onChange, onSubmit, busy }: InputPan
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 16V4m0 0 4 4m-4-4-4 4" />
                 <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" />
               </svg>
-              <span className="text-sm text-[var(--text-muted)]">Kéo thả file hoặc dán ghi chú vào đây…</span>
+              <span className="text-sm text-[var(--text-muted)]">Drop a file or paste your notes here…</span>
             </div>
           )}
         </div>
@@ -119,7 +119,7 @@ export default function InputPanel({ value, onChange, onSubmit, busy }: InputPan
             onClick={() => fileInputRef.current?.click()}
             className="rounded-md border border-dashed border-[var(--border)] px-3 py-1.5 text-xs font-medium text-[var(--text)] transition-colors hover:bg-[var(--surface-2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
           >
-            + Thêm ảnh / ghi âm / file .txt
+            + Add image / audio / .txt
           </button>
           <input
             ref={fileInputRef}
@@ -132,7 +132,7 @@ export default function InputPanel({ value, onChange, onSubmit, busy }: InputPan
               e.target.value = "";
             }}
           />
-          <span className="text-xs text-[var(--text-muted)]">hoặc kéo thả file vào ô trên</span>
+          <span className="text-xs text-[var(--text-muted)]">or drag & drop a file above</span>
         </div>
 
         {value.files.length > 0 && (
@@ -146,7 +146,7 @@ export default function InputPanel({ value, onChange, onSubmit, busy }: InputPan
                 <button
                   type="button"
                   onClick={() => removeFile(i)}
-                  aria-label={`Xoá ${f.name}`}
+                  aria-label={`Remove ${f.name}`}
                   className="text-[var(--text-muted)] transition-colors hover:text-red-500"
                 >
                   ×
@@ -159,20 +159,20 @@ export default function InputPanel({ value, onChange, onSubmit, busy }: InputPan
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <label className="flex flex-col gap-1.5 text-sm">
-          <span className="font-medium text-[var(--text)]">Người tham gia</span>
+          <span className="font-medium text-[var(--text)]">Participants</span>
           <input
             value={value.participants}
             onChange={(e) => onChange({ ...value, participants: e.target.value })}
-            placeholder="An, Bình, Chi…"
+            placeholder="e.g. Alice, Bob, Carol…"
             className="rounded-lg border border-[var(--border)] px-3 py-2 text-sm text-[var(--text)] transition-colors focus:border-[var(--accent)] focus:outline-none focus:ring-[3px] focus:ring-[var(--ring)]"
           />
         </label>
         <label className="flex flex-col gap-1.5 text-sm">
-          <span className="font-medium text-[var(--text)]">Bối cảnh (tuỳ chọn)</span>
+          <span className="font-medium text-[var(--text)]">Context (optional)</span>
           <input
             value={value.context}
             onChange={(e) => onChange({ ...value, context: e.target.value })}
-            placeholder="Họp sprint review, dự án X…"
+            placeholder="e.g. Sprint review, Project X…"
             className="rounded-lg border border-[var(--border)] px-3 py-2 text-sm text-[var(--text)] transition-colors focus:border-[var(--accent)] focus:outline-none focus:ring-[3px] focus:ring-[var(--ring)]"
           />
         </label>
@@ -184,7 +184,7 @@ export default function InputPanel({ value, onChange, onSubmit, busy }: InputPan
         disabled={!canSubmit}
         className="inline-flex items-center justify-center gap-2 rounded-lg bg-[var(--accent)] px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--accent-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--ring)] active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-[var(--border)] disabled:text-[var(--text-muted)] disabled:active:scale-100"
       >
-        {busy ? "Đang xử lý…" : "Tạo biên bản"}
+        {busy ? "Processing…" : "Generate minutes"}
       </button>
     </div>
   );

@@ -4,7 +4,7 @@ test("emits header and a quoted row with STT and note", () => {
   const csv = tasksToCsv({ title: "", summary: "", language: "vi", tasks: [
     { id: "1", task: 'Gửi "JD"', pic: "An", deadline: "T6", note: "gấp" }]});
   const lines = csv.trim().split("\n");
-  expect(lines[0]).toBe("STT,Task,PIC,Deadline,Note");
+  expect(lines[0]).toBe("No.,Task,PIC,Deadline,Note");
   expect(lines[1]).toContain('"1"');
   expect(lines[1]).toContain('"Gửi ""JD"""');
   expect(lines[1]).toContain('"gấp"');

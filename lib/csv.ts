@@ -7,7 +7,7 @@ const q = (s: string) => {
   return `"${safe.replace(/"/g, '""')}"`;
 };
 export function tasksToCsv(result: MeetingResult): string {
-  const header = "STT,Task,PIC,Deadline,Note";
+  const header = "No.,Task,PIC,Deadline,Note";
   const rows = result.tasks.map((t, i) =>
     [String(i + 1), t.task, t.pic, t.deadline, t.note].map(q).join(","));
   return [header, ...rows].join("\n");

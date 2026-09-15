@@ -9,8 +9,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Biên bản cuộc họp",
-  description: "Tạo biên bản cuộc họp và danh sách việc cần làm từ ghi chú, ảnh và ghi âm.",
+  title: "Meeting Minutes",
+  description: "Generate meeting minutes and an action list from notes, photos, and audio recordings.",
 };
 
 // Typed plainly (not via the generated `LayoutProps<"/">` helper): that helper is only
@@ -19,7 +19,7 @@ export const metadata: Metadata = {
 // documented App Router layout signature and needs no generated types.
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="vi" className={`${inter.variable} h-full antialiased`}>
+    <html lang="en" className={`${inter.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
         {children}
         <Toaster richColors position="top-right" />

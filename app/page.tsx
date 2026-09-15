@@ -8,7 +8,7 @@ import ResultView from "@/components/ResultView";
 import { tasksToCsv } from "@/lib/csv";
 import type { MeetingResult, Task } from "@/lib/types";
 
-const LANGUAGE = "vi";
+const LANGUAGE = "en";
 const EMPTY_INPUT: InputValue = { text: "", participants: "", context: "", files: [] };
 
 interface Media {
@@ -42,23 +42,23 @@ async function filesToMedia(files: File[]): Promise<Media[]> {
     const isAudio = file.type.startsWith("audio/");
     if (!isImage && !isAudio) continue;
     const base64 = await fileToBase64(file);
-    const label = isImage ? `Ảnh ${++imageCount}` : `Ghi âm ${++audioCount}`;
+    const label = isImage ? `Image ${++imageCount}` : `Audio ${++audioCount}`;
     media.push({ label, mimeType: file.type, base64 });
   }
   return media;
 }
 
 // Backend error codes (see lib/processMeeting.ts, lib/recheckMeeting.ts, lib/gemini.ts,
-// lib/greenode.ts) mapped to friendly Vietnamese messages for the toast + inline banner.
+// lib/greenode.ts) mapped to friendly English messages for the toast + inline banner.
 const ERROR_MESSAGES: Record<string, string> = {
-  GEMINI_ERROR: "Không đọc được ảnh/ghi âm đã tải lên. Vui lòng kiểm tra file và thử lại.",
-  GREENODE_ERROR: "Không kết nối được với AI để xử lý. Vui lòng thử lại sau ít phút.",
-  INVALID_RESULT: "AI trả về kết quả không hợp lệ. Vui lòng thử lại.",
-  FILE_READ_ERROR: "Không đọc được một trong các file đã chọn. Vui lòng thử lại.",
+  GEMINI_ERROR: "Couldn't read the uploaded image/audio. Please check the file and try again.",
+  GREENODE_ERROR: "Couldn't connect to the AI for processing. Please try again in a few minutes.",
+  INVALID_RESULT: "The AI returned an invalid result. Please try again.",
+  FILE_READ_ERROR: "Couldn't read one of the selected files. Please try again.",
 };
 
 function friendlyMessage(code: string): string {
-  return ERROR_MESSAGES[code] ?? "Đã có lỗi xảy ra. Vui lòng kiểm tra kết nối và thử lại.";
+  return ERROR_MESSAGES[code] ?? "Something went wrong. Please check your connection and try again.";
 }
 
 function errorCodeFrom(e: unknown): string {
@@ -107,7 +107,7 @@ export default function Home() {
       setResult({ title: data.title ?? "", summary: data.summary, language: data.language, tasks: data.tasks });
       setRawText(typeof data.rawText === "string" ? data.rawText : "");
       setPhase(null);
-      toast.success("Đã tạo biên bản cuộc họp.");
+      toast.success("Meeting minutes generated.");
     } catch (e) {
       const message = friendlyMessage(errorCodeFrom(e));
       setPhase(null);
@@ -157,7 +157,7 @@ export default function Home() {
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error ?? "UNKNOWN");
       setResult({ title: data.title ?? "", summary: data.summary, language: data.language, tasks: data.tasks });
-      toast.success("Đã cập nhật biên bản sau khi kiểm tra lại.");
+      toast.success("Minutes updated after re-check.");
     } catch (e) {
       toast.error(friendlyMessage(errorCodeFrom(e)));
     } finally {
@@ -168,12 +168,12 @@ export default function Home() {
   function handleExportCsv() {
     if (!result) return;
     const csv = tasksToCsv(result);
-    // Leading BOM keeps Vietnamese diacritics readable when the CSV is opened in Excel.
+    // Leading BOM keeps special characters readable when the CSV is opened in Excel.
     const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "bien-ban-hop.csv";
+    a.download = "meeting-minutes.csv";
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -202,12 +202,12 @@ export default function Home() {
               B
             </span>
             <h1 className="text-2xl font-semibold tracking-tight text-[var(--text)] sm:text-[28px]">
-              Biên bản cuộc họp
+              Meeting Minutes
             </h1>
           </div>
           <p className="text-sm text-[var(--text-muted)]">
-            Dán ghi chú, tải ảnh chụp bảng hoặc file ghi âm — AI sẽ tổng hợp thành biên bản và danh sách việc
-            cần làm.
+            Paste notes, or upload a board photo / voice recording — AI turns it into minutes and an action
+            list.
           </p>
         </header>
 

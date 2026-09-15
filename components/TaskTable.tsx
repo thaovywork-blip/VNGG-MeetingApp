@@ -15,7 +15,7 @@ export default function TaskTable({ tasks, onEdit, onDelete, onAdd }: TaskTableP
     return (
       <div className="overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface)] shadow-[0_1px_2px_rgba(16,24,40,0.05)]">
         <p className="px-4 py-6 text-center text-sm text-[var(--text-muted)]">
-          Chưa có việc nào — bấm ＋ Thêm dòng để thêm.
+          No action items yet — click + Add row to add one.
         </p>
         <AddRowButton onAdd={onAdd} />
       </div>
@@ -28,13 +28,13 @@ export default function TaskTable({ tasks, onEdit, onDelete, onAdd }: TaskTableP
         <table className="w-full min-w-[860px] table-fixed text-left text-sm">
           <thead className="bg-[var(--surface-2)] text-xs uppercase tracking-wide text-[var(--text-muted)]">
             <tr>
-              <th className="w-[5%] px-4 py-2.5 text-center font-medium">STT</th>
+              <th className="w-[5%] px-4 py-2.5 text-center font-medium">No.</th>
               <th className="w-[30%] px-4 py-2.5 font-medium">Task</th>
               <th className="w-[13%] px-4 py-2.5 font-medium">PIC</th>
               <th className="w-[13%] px-4 py-2.5 font-medium">Deadline</th>
               <th className="w-[31%] px-4 py-2.5 font-medium">Note</th>
               <th className="w-[8%] px-2 py-2.5 font-medium">
-                <span className="sr-only">Hành động</span>
+                <span className="sr-only">Actions</span>
               </th>
             </tr>
           </thead>
@@ -49,7 +49,7 @@ export default function TaskTable({ tasks, onEdit, onDelete, onAdd }: TaskTableP
                   <EditableField
                     value={t.pic}
                     onCommit={(v) => onEdit(t.id, "pic", v)}
-                    placeholder="— nhập —"
+                    placeholder="— add —"
                   />
                 </td>
                 <td className="px-4 py-3">
@@ -62,8 +62,8 @@ export default function TaskTable({ tasks, onEdit, onDelete, onAdd }: TaskTableP
                   <button
                     type="button"
                     onClick={() => onDelete(t.id)}
-                    aria-label="Xóa dòng"
-                    title="Xóa dòng"
+                    aria-label="Delete row"
+                    title="Delete row"
                     className="rounded-md p-1.5 text-[var(--text-muted)]/60 opacity-70 transition-colors hover:text-[#DC2626] hover:opacity-100 focus-visible:opacity-100 focus-visible:text-[#DC2626] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] group-hover:opacity-100"
                   >
                     <svg aria-hidden="true" viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
@@ -93,7 +93,7 @@ function AddRowButton({ onAdd }: { onAdd: () => void }) {
         onClick={onAdd}
         className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium text-[var(--text-muted)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--accent-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
       >
-        ＋ Thêm dòng
+        + Add row
       </button>
     </div>
   );

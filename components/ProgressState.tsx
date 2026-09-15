@@ -7,8 +7,8 @@ interface ProgressStateProps {
 }
 
 const ALL_STEPS: { key: ProgressPhase; label: string }[] = [
-  { key: "reading", label: "Đang đọc ảnh/ghi âm…" },
-  { key: "writing", label: "Đang viết biên bản…" },
+  { key: "reading", label: "Reading image / audio…" },
+  { key: "writing", label: "Writing minutes…" },
 ];
 
 export default function ProgressState({ phase, hasMedia = true }: ProgressStateProps) {
@@ -20,7 +20,7 @@ export default function ProgressState({ phase, hasMedia = true }: ProgressStateP
       <div
         className="h-10 w-10 animate-spin rounded-full border-4 border-[var(--border)] border-t-[var(--accent)]"
         role="status"
-        aria-label="Đang xử lý"
+        aria-label="Processing"
       />
       <ul className="flex flex-col gap-3 text-sm">
         {steps.map((step, i) => {
