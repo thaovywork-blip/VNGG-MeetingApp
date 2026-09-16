@@ -2,20 +2,40 @@ import { mkdtemp, rm } from "fs/promises";
 import { tmpdir } from "os";
 import path from "path";
 import { afterEach, beforeEach, expect, test } from "vitest";
-import { deleteMeeting, getMeeting, isValidMeetingId, listMeetings, saveMeeting } from "../meetingStore";
+import {
+  createFolder,
+  deleteFolder,
+  deleteMeeting,
+  getMeeting,
+  isValidMeetingId,
+  listFolders,
+  listMeetings,
+  renameFolder,
+  saveMeeting,
+  setMeetingFolder,
+} from "../meetingStore";
 
 let tempDir: string;
+let foldersTempDir: string;
 let previousEnv: string | undefined;
+let previousFoldersEnv: string | undefined;
 
 beforeEach(async () => {
   previousEnv = process.env.MEETINGS_DIR;
   tempDir = await mkdtemp(path.join(tmpdir(), "meetingStore-test-"));
   process.env.MEETINGS_DIR = tempDir;
+
+  previousFoldersEnv = process.env.FOLDERS_FILE;
+  foldersTempDir = await mkdtemp(path.join(tmpdir(), "folders-test-"));
+  process.env.FOLDERS_FILE = path.join(foldersTempDir, "folders.json");
 });
 
 afterEach(async () => {
   process.env.MEETINGS_DIR = previousEnv;
   await rm(tempDir, { recursive: true, force: true });
+
+  process.env.FOLDERS_FILE = previousFoldersEnv;
+  await rm(foldersTempDir, { recursive: true, force: true });
 });
 
 test("id validation rejects path traversal and accepts safe ids", () => {
@@ -124,4 +144,120 @@ test("listMeetings sorts by savedAt descending", async () => {
 
   const list = await listMeetings();
   expect(list.map((m) => m.id)).toEqual([newer.id, older.id]);
+});
+
+test("listFolders returns an empty array when no folders file exists", async () => {
+  expect(await listFolders()).toEqual([]);
+});
+
+test("createFolder -> list -> rename -> delete round-trip", async () => {
+  const folder = await createFolder("  Sprint planning  ");
+  expect(folder.id).toBeTruthy();
+  expect(folder.name).toBe("Sprint planning");
+  expect(folder.createdAt).toBeTruthy();
+
+  const listed = await listFolders();
+  expect(listed).toHaveLength(1);
+  expect(listed[0]).toEqual(folder);
+
+  const renamed = await renameFolder(folder.id, "Renamed folder");
+  expect(renamed.id).toBe(folder.id);
+  expect(renamed.name).toBe("Renamed folder");
+  expect((await listFolders())[0].name).toBe("Renamed folder");
+
+  await deleteFolder(folder.id);
+  expect(await listFolders()).toEqual([]);
+});
+
+test("createFolder rejects an empty (or whitespace-only) name", async () => {
+  await expect(createFolder("")).rejects.toThrow("INVALID_NAME");
+  await expect(createFolder("   ")).rejects.toThrow("INVALID_NAME");
+});
+
+test("renameFolder rejects a nonexistent id", async () => {
+  await expect(renameFolder("does-not-exist", "New name")).rejects.toThrow("NOT_FOUND");
+});
+
+test("deleteFolder un-assigns its meetings instead of deleting them", async () => {
+  const folder = await createFolder("Team standups");
+  const meeting = await saveMeeting({
+    date: "2026-09-15T00:00:00.000Z",
+    title: "Standup",
+    summary: "s",
+    language: "en",
+    tasks: [],
+    rawText: "",
+    folderId: folder.id,
+  });
+
+  await deleteFolder(folder.id);
+
+  expect(await listFolders()).toEqual([]);
+  const fetched = await getMeeting(meeting.id);
+  expect(fetched).not.toBeNull();
+  expect(fetched?.folderId).toBeNull();
+  const list = await listMeetings();
+  expect(list.find((m) => m.id === meeting.id)?.folderId).toBeNull();
+});
+
+test("saveMeeting persists folderId and listMeetings/getMeeting return it", async () => {
+  const folder = await createFolder("Retros");
+  const saved = await saveMeeting({
+    date: "2026-09-15T00:00:00.000Z",
+    title: "Retro",
+    summary: "s",
+    language: "en",
+    tasks: [],
+    rawText: "",
+    folderId: folder.id,
+  });
+
+  expect(saved.folderId).toBe(folder.id);
+
+  const fetched = await getMeeting(saved.id);
+  expect(fetched?.folderId).toBe(folder.id);
+
+  const list = await listMeetings();
+  expect(list.find((m) => m.id === saved.id)?.folderId).toBe(folder.id);
+});
+
+test("saveMeeting defaults folderId to null when omitted", async () => {
+  const saved = await saveMeeting({
+    date: "2026-09-15T00:00:00.000Z",
+    title: "Untitled",
+    summary: "s",
+    language: "en",
+    tasks: [],
+    rawText: "",
+  });
+
+  expect(saved.folderId).toBeNull();
+  const list = await listMeetings();
+  expect(list.find((m) => m.id === saved.id)?.folderId).toBeNull();
+});
+
+test("setMeetingFolder moves a saved meeting between folders", async () => {
+  const folderA = await createFolder("Folder A");
+  const folderB = await createFolder("Folder B");
+  const saved = await saveMeeting({
+    date: "2026-09-15T00:00:00.000Z",
+    title: "Moveable",
+    summary: "s",
+    language: "en",
+    tasks: [],
+    rawText: "",
+    folderId: folderA.id,
+  });
+
+  const moved = await setMeetingFolder(saved.id, folderB.id);
+  expect(moved.folderId).toBe(folderB.id);
+  expect((await getMeeting(saved.id))?.folderId).toBe(folderB.id);
+
+  const unassigned = await setMeetingFolder(saved.id, null);
+  expect(unassigned.folderId).toBeNull();
+  expect((await getMeeting(saved.id))?.folderId).toBeNull();
+});
+
+test("setMeetingFolder rejects a nonexistent meeting id", async () => {
+  await expect(setMeetingFolder("does-not-exist", null)).rejects.toThrow("NOT_FOUND");
 });

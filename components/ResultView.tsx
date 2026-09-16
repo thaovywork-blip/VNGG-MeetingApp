@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { formatDateLong } from "@/lib/formatDate";
+import type { Folder } from "@/lib/meetingStore";
 import type { MeetingResult, Task } from "@/lib/types";
 import TaskTable from "./TaskTable";
 
@@ -19,7 +20,13 @@ interface ResultViewProps {
   rechecking: boolean;
   saving: boolean;
   saved: boolean;
+  folders: Folder[];
+  saveFolderId: string | null;
+  onSaveFolderChange: (folderId: string | null) => void;
+  onCreateFolder?: (name: string) => Promise<Folder | void> | void;
 }
+
+const NEW_FOLDER_VALUE = "__new__";
 
 export default function ResultView({
   result,
@@ -35,6 +42,10 @@ export default function ResultView({
   rechecking,
   saving,
   saved,
+  folders,
+  saveFolderId,
+  onSaveFolderChange,
+  onCreateFolder,
 }: ResultViewProps) {
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
@@ -64,7 +75,13 @@ export default function ResultView({
       <div className="flex flex-col gap-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h2 className="text-sm font-semibold text-[var(--text)]">Action items</h2>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <FolderPicker
+              folders={folders}
+              saveFolderId={saveFolderId}
+              onSaveFolderChange={onSaveFolderChange}
+              onCreateFolder={onCreateFolder}
+            />
             <button
               type="button"
               onClick={onSave}
@@ -192,6 +209,100 @@ function SummaryContent({ summary }: SummaryContentProps) {
         );
       })}
     </div>
+  );
+}
+
+interface FolderPickerProps {
+  folders: Folder[];
+  saveFolderId: string | null;
+  onSaveFolderChange: (folderId: string | null) => void;
+  onCreateFolder?: (name: string) => Promise<Folder | void> | void;
+}
+
+// A compact labeled <select> that controls which folder the meeting will be saved into.
+// Choosing "+ New folder…" reveals an inline name input (rather than navigating away) so
+// creating a folder and picking it stays a single, uninterrupted flow.
+function FolderPicker({ folders, saveFolderId, onSaveFolderChange, onCreateFolder }: FolderPickerProps) {
+  const [creating, setCreating] = useState(false);
+  const [newName, setNewName] = useState("");
+
+  function handleSelect(value: string) {
+    if (value === NEW_FOLDER_VALUE) {
+      setCreating(true);
+      setNewName("");
+      return;
+    }
+    onSaveFolderChange(value === "" ? null : value);
+  }
+
+  async function handleCreateConfirm() {
+    const trimmed = newName.trim();
+    if (!trimmed || !onCreateFolder) {
+      setCreating(false);
+      return;
+    }
+    const folder = await onCreateFolder(trimmed);
+    setCreating(false);
+    setNewName("");
+    if (folder) onSaveFolderChange(folder.id);
+  }
+
+  if (creating) {
+    return (
+      <div className="flex items-center gap-1.5">
+        <input
+          autoFocus
+          type="text"
+          value={newName}
+          onChange={(e) => setNewName(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              void handleCreateConfirm();
+            } else if (e.key === "Escape") {
+              setCreating(false);
+            }
+          }}
+          placeholder="New folder name"
+          aria-label="New folder name"
+          className="w-36 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-2 py-1.5 text-xs text-[var(--text)] focus:border-[var(--accent)] focus:outline-none focus:ring-[3px] focus:ring-[var(--ring)]"
+        />
+        <button
+          type="button"
+          onClick={() => void handleCreateConfirm()}
+          className="rounded-lg border border-[var(--accent)] bg-[var(--accent-soft)] px-2 py-1.5 text-xs font-medium text-[var(--accent-hover)] transition-colors hover:bg-[var(--accent)] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+        >
+          Add
+        </button>
+        <button
+          type="button"
+          onClick={() => setCreating(false)}
+          className="rounded-md px-1.5 py-1 text-xs font-medium text-[var(--text-muted)] hover:text-[var(--text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+        >
+          Cancel
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <label className="flex items-center gap-1.5 text-xs text-[var(--text-muted)]">
+      <span className="font-medium">Folder</span>
+      <select
+        value={saveFolderId ?? ""}
+        onChange={(e) => handleSelect(e.target.value)}
+        aria-label="Folder to save this meeting into"
+        className="rounded-lg border border-[var(--border)] bg-[var(--surface)] px-2 py-1.5 text-xs text-[var(--text)] focus:border-[var(--accent)] focus:outline-none focus:ring-[3px] focus:ring-[var(--ring)]"
+      >
+        <option value="">No folder</option>
+        {folders.map((f) => (
+          <option key={f.id} value={f.id}>
+            {f.name}
+          </option>
+        ))}
+        {onCreateFolder && <option value={NEW_FOLDER_VALUE}>+ New folder…</option>}
+      </select>
+    </label>
   );
 }
 

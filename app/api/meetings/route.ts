@@ -25,6 +25,7 @@ export async function POST(req: Request) {
       language: body.language,
       tasks: body.tasks as Task[],
       rawText: typeof body.rawText === "string" ? body.rawText : "",
+      folderId: typeof body.folderId === "string" ? body.folderId : null,
     });
     return NextResponse.json(record);
   } catch (e) {

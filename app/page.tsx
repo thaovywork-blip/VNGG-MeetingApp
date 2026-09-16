@@ -1,13 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import InputPanel, { type InputValue, type OutputLanguage } from "@/components/InputPanel";
 import ProgressState, { type ProgressPhase } from "@/components/ProgressState";
 import ResultView from "@/components/ResultView";
 import SavedMeetings from "@/components/SavedMeetings";
 import { tasksToCsv } from "@/lib/csv";
-import type { MeetingSummary } from "@/lib/meetingStore";
+import type { Folder, MeetingSummary } from "@/lib/meetingStore";
 import type { MeetingResult, Task } from "@/lib/types";
 
 type View = "input" | "result" | "saved";
@@ -94,6 +94,14 @@ export default function Home() {
   const [saving, setSaving] = useState(false);
   const [savedMeetings, setSavedMeetings] = useState<MeetingSummary[]>([]);
   const [savedLoading, setSavedLoading] = useState(false);
+  const [folders, setFolders] = useState<Folder[]>([]);
+  const [saveFolderId, setSaveFolderId] = useState<string | null>(null);
+
+  // Loaded once up front (not just when opening the Saved view) so the folder picker next
+  // to the Save button already has choices right after a fresh meeting is generated.
+  useEffect(() => {
+    void loadFolders();
+  }, []);
 
   async function handleSubmit() {
     setError(null);
@@ -118,6 +126,7 @@ export default function Home() {
       setRawText(typeof data.rawText === "string" ? data.rawText : "");
       setCurrentMeetingId(null);
       setCurrentDate(new Date().toISOString());
+      setSaveFolderId(null);
       setView("result");
       setPhase(null);
       toast.success("Meeting minutes generated.");
@@ -201,6 +210,7 @@ export default function Home() {
     setPhase(null);
     setCurrentMeetingId(null);
     setCurrentDate(null);
+    setSaveFolderId(null);
     setView("input");
   }
 
@@ -219,6 +229,7 @@ export default function Home() {
           language: result.language,
           tasks: result.tasks,
           rawText: rawText ?? "",
+          folderId: saveFolderId,
         }),
       });
       const data = await res.json();
@@ -246,9 +257,21 @@ export default function Home() {
     }
   }
 
+  async function loadFolders() {
+    try {
+      const res = await fetch("/api/folders");
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error ?? "UNKNOWN");
+      setFolders(data);
+    } catch (e) {
+      toast.error(friendlyMessage(errorCodeFrom(e)));
+    }
+  }
+
   function handleShowSaved() {
     setView("saved");
     void loadSavedMeetings();
+    void loadFolders();
   }
 
   async function handleOpenSaved(id: string) {
@@ -260,6 +283,7 @@ export default function Home() {
       setRawText(typeof data.rawText === "string" ? data.rawText : "");
       setCurrentMeetingId(data.id);
       setCurrentDate(data.date ?? null);
+      setSaveFolderId(data.folderId ?? null);
       setError(null);
       setView("result");
     } catch (e) {
@@ -273,6 +297,68 @@ export default function Home() {
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error ?? "UNKNOWN");
       toast.success("Deleted");
+      await loadSavedMeetings();
+    } catch (e) {
+      toast.error(friendlyMessage(errorCodeFrom(e)));
+    }
+  }
+
+  async function handleCreateFolder(name: string): Promise<Folder | undefined> {
+    try {
+      const res = await fetch("/api/folders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error ?? "UNKNOWN");
+      toast.success("Folder created");
+      await loadFolders();
+      return data as Folder;
+    } catch (e) {
+      toast.error(friendlyMessage(errorCodeFrom(e)));
+      return undefined;
+    }
+  }
+
+  async function handleRenameFolder(id: string, name: string) {
+    try {
+      const res = await fetch(`/api/folders/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error ?? "UNKNOWN");
+      toast.success("Folder renamed");
+      await loadFolders();
+    } catch (e) {
+      toast.error(friendlyMessage(errorCodeFrom(e)));
+    }
+  }
+
+  async function handleDeleteFolder(id: string) {
+    try {
+      const res = await fetch(`/api/folders/${id}`, { method: "DELETE" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error ?? "UNKNOWN");
+      toast.success("Folder deleted");
+      await Promise.all([loadFolders(), loadSavedMeetings()]);
+    } catch (e) {
+      toast.error(friendlyMessage(errorCodeFrom(e)));
+    }
+  }
+
+  async function handleMoveMeeting(id: string, folderId: string | null) {
+    try {
+      const res = await fetch(`/api/meetings/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ folderId }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error ?? "UNKNOWN");
+      toast.success("Moved");
       await loadSavedMeetings();
     } catch (e) {
       toast.error(friendlyMessage(errorCodeFrom(e)));
@@ -336,10 +422,15 @@ export default function Home() {
         ) : view === "saved" ? (
           <SavedMeetings
             meetings={savedMeetings}
+            folders={folders}
             loading={savedLoading}
             onOpen={handleOpenSaved}
             onDelete={handleDeleteSaved}
             onBack={handleReset}
+            onCreateFolder={handleCreateFolder}
+            onRenameFolder={handleRenameFolder}
+            onDeleteFolder={handleDeleteFolder}
+            onMoveMeeting={handleMoveMeeting}
           />
         ) : view === "result" && result ? (
           <ResultView
@@ -356,6 +447,10 @@ export default function Home() {
             rechecking={rechecking}
             saving={saving}
             saved={currentMeetingId !== null}
+            folders={folders}
+            saveFolderId={saveFolderId}
+            onSaveFolderChange={setSaveFolderId}
+            onCreateFolder={handleCreateFolder}
           />
         ) : (
           <div className="mx-auto flex w-full max-w-[56rem] flex-col gap-4">
