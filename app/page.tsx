@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import InputPanel, { type InputValue } from "@/components/InputPanel";
+import InputPanel, { type InputValue, type OutputLanguage } from "@/components/InputPanel";
 import ProgressState, { type ProgressPhase } from "@/components/ProgressState";
 import ResultView from "@/components/ResultView";
 import SavedMeetings from "@/components/SavedMeetings";
@@ -12,7 +12,6 @@ import type { MeetingResult, Task } from "@/lib/types";
 
 type View = "input" | "result" | "saved";
 
-const LANGUAGE = "en";
 const EMPTY_INPUT: InputValue = { text: "", participants: "", context: "", files: [] };
 
 interface Media {
@@ -83,6 +82,7 @@ function applyTaskEdit(task: Task, field: keyof Task, value: string): Task {
 
 export default function Home() {
   const [input, setInput] = useState<InputValue>(EMPTY_INPUT);
+  const [outputLang, setOutputLang] = useState<OutputLanguage>("English");
   const [phase, setPhase] = useState<ProgressPhase | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<MeetingResult | null>(null);
@@ -108,7 +108,7 @@ export default function Home() {
           text: input.text,
           participants: input.participants,
           context: input.context,
-          language: LANGUAGE,
+          language: outputLang,
           media,
         }),
       });
@@ -165,7 +165,7 @@ export default function Home() {
       const res = await fetch("/api/recheck", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ rawText, current: result, language: LANGUAGE }),
+        body: JSON.stringify({ rawText, current: result, language: result.language }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error ?? "UNKNOWN");
@@ -290,10 +290,10 @@ export default function Home() {
               aria-hidden="true"
               className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--accent)] text-sm font-semibold text-white sm:h-9 sm:w-9"
             >
-              B
+              N
             </span>
             <h1 className="text-2xl font-semibold tracking-tight text-[var(--text)] sm:text-[28px]">
-              Meeting Minutes
+              Notely Assistant
             </h1>
           </div>
           <p className="text-sm text-[var(--text-muted)]">
@@ -359,7 +359,14 @@ export default function Home() {
           />
         ) : (
           <div className="mx-auto flex w-full max-w-[56rem] flex-col gap-4">
-            <InputPanel value={input} onChange={setInput} onSubmit={handleSubmit} busy={busy} />
+            <InputPanel
+              value={input}
+              onChange={setInput}
+              onSubmit={handleSubmit}
+              busy={busy}
+              language={outputLang}
+              onLanguageChange={setOutputLang}
+            />
             {error && (
               <div className="flex items-start gap-2.5 rounded-xl border border-red-200 bg-[#FEF2F2] px-4 py-3 text-sm text-red-700">
                 <svg

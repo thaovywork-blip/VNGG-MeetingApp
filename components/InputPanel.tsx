@@ -10,14 +10,24 @@ export interface InputValue {
   files: File[];
 }
 
+export type OutputLanguage = "English" | "Vietnamese" | "Chinese";
+
 interface InputPanelProps {
   value: InputValue;
   onChange: (value: InputValue) => void;
   onSubmit: () => void;
   busy: boolean;
+  language: OutputLanguage;
+  onLanguageChange: (language: OutputLanguage) => void;
 }
 
 const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
+
+const LANGUAGE_OPTIONS: { value: OutputLanguage; label: string }[] = [
+  { value: "English", label: "English" },
+  { value: "Vietnamese", label: "Tiếng Việt" },
+  { value: "Chinese", label: "中文" },
+];
 
 function isTextFile(file: File): boolean {
   return file.type.startsWith("text/") || file.name.toLowerCase().endsWith(".txt");
@@ -27,7 +37,14 @@ function isSupportedMedia(file: File): boolean {
   return file.type.startsWith("image/") || file.type.startsWith("audio/");
 }
 
-export default function InputPanel({ value, onChange, onSubmit, busy }: InputPanelProps) {
+export default function InputPanel({
+  value,
+  onChange,
+  onSubmit,
+  busy,
+  language,
+  onLanguageChange,
+}: InputPanelProps) {
   const [dragActive, setDragActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -176,6 +193,31 @@ export default function InputPanel({ value, onChange, onSubmit, busy }: InputPan
             className="rounded-lg border border-[var(--border)] px-3 py-2 text-sm text-[var(--text)] transition-colors focus:border-[var(--accent)] focus:outline-none focus:ring-[3px] focus:ring-[var(--ring)]"
           />
         </label>
+      </div>
+
+      <div className="flex flex-col gap-1.5 text-sm">
+        <span className="font-medium text-[var(--text)]">Output language</span>
+        <div
+          role="group"
+          aria-label="Output language"
+          className="inline-flex w-fit rounded-lg border border-[var(--border)] bg-[var(--surface-2)] p-1"
+        >
+          {LANGUAGE_OPTIONS.map((opt) => (
+            <button
+              key={opt.value}
+              type="button"
+              onClick={() => onLanguageChange(opt.value)}
+              aria-pressed={language === opt.value}
+              className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] ${
+                language === opt.value
+                  ? "bg-[var(--accent)] text-white"
+                  : "text-[var(--text-muted)] hover:text-[var(--text)]"
+              }`}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       <button
