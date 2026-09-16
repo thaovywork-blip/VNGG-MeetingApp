@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { formatDateLong } from "@/lib/formatDate";
 import type { Folder } from "@/lib/meetingStore";
+import { BULLET_PREFIXES, parseSummaryBlocks } from "@/lib/parseSummary";
 import type { MeetingResult, Task } from "@/lib/types";
 import TaskTable from "./TaskTable";
 
@@ -15,6 +16,7 @@ interface ResultViewProps {
   onAddTask: () => void;
   onRecheck: () => void;
   onExportCsv: () => void;
+  onExportPdf: () => void;
   onReset: () => void;
   onSave: () => void;
   rechecking: boolean;
@@ -37,6 +39,7 @@ export default function ResultView({
   onAddTask,
   onRecheck,
   onExportCsv,
+  onExportPdf,
   onReset,
   onSave,
   rechecking,
@@ -103,7 +106,14 @@ export default function ResultView({
               onClick={onExportCsv}
               className="rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-xs font-medium text-[var(--text)] transition-colors hover:bg-[var(--surface-2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
             >
-              Export
+              Export CSV
+            </button>
+            <button
+              type="button"
+              onClick={onExportPdf}
+              className="rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-xs font-medium text-[var(--text)] transition-colors hover:bg-[var(--surface-2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+            >
+              Export PDF
             </button>
           </div>
         </div>
@@ -112,44 +122,6 @@ export default function ResultView({
       </div>
     </div>
   );
-}
-
-type SummaryBlock =
-  | { type: "heading"; text: string }
-  | { type: "bullets"; items: string[] }
-  | { type: "paragraph"; text: string };
-
-const BULLET_PREFIXES = ["- ", "* ", "• "];
-
-function parseSummaryBlocks(summary: string): SummaryBlock[] {
-  const lines = summary.split("\n");
-  const blocks: SummaryBlock[] = [];
-
-  for (const rawLine of lines) {
-    const line = rawLine.trim();
-    if (!line) continue;
-
-    if (line.startsWith("## ")) {
-      blocks.push({ type: "heading", text: line.slice(3).trim() });
-      continue;
-    }
-
-    const bulletPrefix = BULLET_PREFIXES.find((prefix) => line.startsWith(prefix));
-    if (bulletPrefix) {
-      const item = line.slice(bulletPrefix.length).trim();
-      const last = blocks[blocks.length - 1];
-      if (last && last.type === "bullets") {
-        last.items.push(item);
-      } else {
-        blocks.push({ type: "bullets", items: [item] });
-      }
-      continue;
-    }
-
-    blocks.push({ type: "paragraph", text: line });
-  }
-
-  return blocks;
 }
 
 interface SummaryContentProps {

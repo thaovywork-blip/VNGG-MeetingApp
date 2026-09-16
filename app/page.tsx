@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import InputPanel, { type InputValue, type OutputLanguage } from "@/components/InputPanel";
+import PrintDocument from "@/components/PrintDocument";
 import ProgressState, { type ProgressPhase } from "@/components/ProgressState";
 import ResultView from "@/components/ResultView";
 import SavedMeetings from "@/components/SavedMeetings";
@@ -202,6 +203,10 @@ export default function Home() {
     URL.revokeObjectURL(url);
   }
 
+  function handleExportPdf() {
+    window.print();
+  }
+
   function handleReset() {
     setInput(EMPTY_INPUT);
     setResult(null);
@@ -369,6 +374,11 @@ export default function Home() {
 
   return (
     <div className="flex flex-1 flex-col px-4 py-10 sm:px-8 sm:py-14">
+      {result && (
+        <div className="print-only">
+          <PrintDocument result={result} date={currentDate ?? undefined} />
+        </div>
+      )}
       <main className="mx-auto flex w-full flex-1 flex-col gap-8">
         <header className="mx-auto flex w-full max-w-[56rem] flex-col gap-1">
           <div className="flex items-center gap-3">
@@ -442,6 +452,7 @@ export default function Home() {
             onAddTask={handleAddTask}
             onRecheck={handleRecheck}
             onExportCsv={handleExportCsv}
+            onExportPdf={handleExportPdf}
             onReset={handleReset}
             onSave={handleSave}
             rechecking={rechecking}

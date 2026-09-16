@@ -23,3 +23,140 @@ body {
   color: var(--text);
   font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
 }
+
+/* Print / PDF export -------------------------------------------------------
+   PrintDocument (components/PrintDocument.tsx) is kept in the DOM at all times
+   (wrapped in .print-only) so window.print() can turn it into a PDF, but it
+   must stay invisible on screen and only appear in the print output. Styling
+   here is intentionally explicit (not the app's CSS variables) so the printed
+   page is always black-on-white regardless of the app's on-screen theme. */
+
+.print-only {
+  display: none;
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  .print-only {
+    display: block;
+  }
+
+  .print-document,
+  .print-document * {
+    visibility: visible;
+  }
+
+  .print-document {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    background: #ffffff;
+    color: #000000;
+    font-family: Arial, Helvetica, sans-serif;
+  }
+
+  .pd-app-label {
+    margin: 0 0 4px 0;
+    font-size: 10px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: #555555;
+  }
+
+  .pd-title {
+    margin: 0 0 4px 0;
+    font-size: 22px;
+    font-weight: 700;
+    color: #000000;
+  }
+
+  .pd-date {
+    margin: 0 0 20px 0;
+    font-size: 12px;
+    color: #333333;
+  }
+
+  .pd-section-title {
+    margin: 20px 0 8px 0;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #000000;
+    border-bottom: 1px solid #000000;
+    padding-bottom: 4px;
+  }
+
+  .pd-minutes {
+    margin-bottom: 8px;
+  }
+
+  .pd-heading {
+    margin: 12px 0 4px 0;
+    font-size: 13px;
+    font-weight: 700;
+    color: #000000;
+  }
+
+  .pd-heading:first-child {
+    margin-top: 0;
+  }
+
+  .pd-paragraph {
+    margin: 0 0 8px 0;
+    font-size: 12px;
+    line-height: 1.5;
+    color: #000000;
+    white-space: pre-line;
+  }
+
+  .pd-bullets {
+    margin: 0 0 8px 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .pd-bullet-item {
+    display: flex;
+    gap: 6px;
+    font-size: 12px;
+    line-height: 1.5;
+    color: #000000;
+    margin-bottom: 2px;
+  }
+
+  .pd-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 4px;
+  }
+
+  .pd-th,
+  .pd-td {
+    border: 1px solid #000000;
+    padding: 6px 8px;
+    font-size: 11px;
+    text-align: left;
+    vertical-align: top;
+    color: #000000;
+  }
+
+  .pd-th {
+    font-weight: 700;
+    background: #eeeeee;
+  }
+
+  .pd-col-no {
+    width: 36px;
+    text-align: center;
+  }
+
+  @page {
+    margin: 16mm 14mm;
+  }
+}
