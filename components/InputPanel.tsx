@@ -11,6 +11,7 @@ export interface InputValue {
 }
 
 export type OutputLanguage = "English" | "Vietnamese" | "Chinese";
+export type SessionType = "Meeting" | "Interview";
 
 interface InputPanelProps {
   value: InputValue;
@@ -19,6 +20,8 @@ interface InputPanelProps {
   busy: boolean;
   language: OutputLanguage;
   onLanguageChange: (language: OutputLanguage) => void;
+  sessionType: SessionType;
+  onSessionTypeChange: (sessionType: SessionType) => void;
 }
 
 const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
@@ -27,6 +30,11 @@ const LANGUAGE_OPTIONS: { value: OutputLanguage; label: string }[] = [
   { value: "English", label: "English" },
   { value: "Vietnamese", label: "Tiếng Việt" },
   { value: "Chinese", label: "中文" },
+];
+
+const SESSION_TYPE_OPTIONS: { value: SessionType; label: string }[] = [
+  { value: "Meeting", label: "Meeting" },
+  { value: "Interview", label: "Interview" },
 ];
 
 function isTextFile(file: File): boolean {
@@ -44,6 +52,8 @@ export default function InputPanel({
   busy,
   language,
   onLanguageChange,
+  sessionType,
+  onSessionTypeChange,
 }: InputPanelProps) {
   const [dragActive, setDragActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -193,6 +203,31 @@ export default function InputPanel({
             className="rounded-lg border border-[var(--border)] px-3 py-2 text-sm text-[var(--text)] transition-colors focus:border-[var(--accent)] focus:outline-none focus:ring-[3px] focus:ring-[var(--ring)]"
           />
         </label>
+      </div>
+
+      <div className="flex flex-col gap-1.5 text-sm">
+        <span className="font-medium text-[var(--text)]">Type</span>
+        <div
+          role="group"
+          aria-label="Session type"
+          className="inline-flex w-fit rounded-lg border border-[var(--border)] bg-[var(--surface-2)] p-1"
+        >
+          {SESSION_TYPE_OPTIONS.map((opt) => (
+            <button
+              key={opt.value}
+              type="button"
+              onClick={() => onSessionTypeChange(opt.value)}
+              aria-pressed={sessionType === opt.value}
+              className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] ${
+                sessionType === opt.value
+                  ? "bg-[var(--accent)] text-white"
+                  : "text-[var(--text-muted)] hover:text-[var(--text)]"
+              }`}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="flex flex-col gap-1.5 text-sm">

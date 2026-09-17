@@ -3,19 +3,41 @@ export const GEMINI_IMAGE_PROMPT =
 export const GEMINI_AUDIO_PROMPT =
   "Listen to this audio recording and produce a full transcript, preserving the original meaning. Return only the text, with no explanation.";
 
-export function buildClaudePrompt(rawText: string, language: string): string {
-  return `You are an assistant that writes meeting minutes. Below are the raw notes from a meeting (possibly merged from multiple sources).
+export type SessionType = "Meeting" | "Interview";
+
+const INTERVIEW_SUMMARY_INSTRUCTION = `2. Write a CONCISE but COMPLETE candidate summary into "summary", grouping the candidate information under EXACTLY these headings, IN THIS ORDER (use this exact heading text), using this EXACT markdown-style convention:
+   - "## Working Experience"
+   - "## Functional Skill"
+   - "## Motivation"
+   - "## Game Interest"
+   - "## Others"
+   Each heading is a line starting with "## " followed by the exact heading text above. Under each heading, write one or more bullet lines, each starting with "- ", one concise point per line, putting each point under the best-fitting heading — "## Others" holds anything that doesn't fit the first four. Use "\\n" line breaks between every line (heading and bullet lines alike). Include a heading only if it has at least one point (you may omit an empty one), but prefer to cover Working Experience, Functional Skill, Motivation, and Game Interest whenever the notes mention them. Each bullet is ONE short line — NO filler, NO repetition, NO long prose. It must still be complete — do not omit a key point just to stay short — but say it in as few words as possible, while covering every key point about the candidate.`;
+
+const MEETING_SUMMARY_INSTRUCTION = `2. Write a CONCISE but COMPLETE set of meeting minutes into "summary", using this EXACT markdown-style convention with these headings:
+   - "## Attendees" — one or more "- " bullet lines listing the attendees (and role/title if mentioned).
+   - "## Meeting Content" — the discussion GROUPED BY TOPIC; each key topic as one or more "- " bullet lines capturing the discussion (and the owner in parentheses if identifiable).
+   - "## Other Notes" — one or more "- " bullet lines for anything else worth recording (omit this heading entirely if there is nothing to note).
+   Each heading is a line starting with "## " followed by the exact heading text above. Use "\\n" line breaks between every line (heading and bullet lines alike). Create AS MANY topic bullets under "## Meeting Content" as the meeting's content needs — adaptive length, NO fixed count. Each bullet is ONE short line — NO filler, NO repetition, NO long prose. It must still be complete — do not omit a key topic or decision just to stay short — but say it in as few words as possible, while covering every key topic, decision, and action item.`;
+
+const INTERVIEW_TASKS_INSTRUCTION =
+  "3. Extract the follow-up actions (e.g. next interview round, send assessment) as a list of tasks: for each one, separate out the task description (task), the deadline (deadline), and a short note if needed (note) — e.g. context or additional remarks.";
+
+const MEETING_TASKS_INSTRUCTION =
+  "3. Extract the concrete decisions and action items as a list of tasks: for each one, separate out the task description (task), the deadline (deadline), and a short note if needed (note) — e.g. context or additional remarks.";
+
+export function buildClaudePrompt(rawText: string, language: string, sessionType: SessionType = "Meeting"): string {
+  const isInterview = sessionType === "Interview";
+  const sourceLabel = isInterview ? "candidate interview" : "meeting";
+  const summaryInstruction = isInterview ? INTERVIEW_SUMMARY_INSTRUCTION : MEETING_SUMMARY_INSTRUCTION;
+  const tasksInstruction = isInterview ? INTERVIEW_TASKS_INSTRUCTION : MEETING_TASKS_INSTRUCTION;
+
+  return `You are an assistant that writes meeting minutes. Below are the raw notes from a ${sourceLabel} (possibly merged from multiple sources).
 
 Follow these steps exactly:
 0. Normalize the language: translate everything into "${language}", and interpret any slang, abbreviations, or shorthand (e.g. informal phrasing meaning "agreed" or "confirmed").
-1. Write a concise title (about 3-8 words) naming the main topic of the meeting, into the "title" field.
-2. Write a CONCISE but COMPLETE set of meeting minutes into "summary", GROUPED BY TOPIC using this EXACT markdown-style convention:
-   - Each topic is a heading line starting with "## " followed by a short topic name (e.g. "## Recruitment Plan", "## Interview Logistics").
-   - Under each topic, write one or more bullet lines, each starting with "- ", one concise point per line.
-   - Use "\\n" line breaks between every line (heading and bullet lines alike).
-   - Group related points under the same topic. Create AS MANY topics and bullets as the meeting's content needs — adaptive length, NO fixed count.
-   - Each bullet is ONE short line — NO filler, NO repetition, NO long prose. It must still be complete — do not omit a key topic or decision just to stay short — but say it in as few words as possible, while covering every key topic, decision, and action item.
-3. Extract the action items as a list of tasks: for each one, separate out the task description (task), the deadline (deadline), and a short note if needed (note) — e.g. context or additional remarks.
+1. Write a concise title (about 3-8 words) naming the main topic of the ${sourceLabel}, into the "title" field.
+${summaryInstruction}
+${tasksInstruction}
 
 IMPORTANT: Do NOT assign a person-in-charge (PIC) to any task — the user will fill that in by hand. Do NOT classify tasks as "decided" or "proposed".
 

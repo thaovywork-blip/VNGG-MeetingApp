@@ -1,5 +1,5 @@
 import { buildRawText } from "./buildRawText";
-import { buildClaudePrompt } from "./prompts";
+import { buildClaudePrompt, type SessionType } from "./prompts";
 import { parseResult } from "./parseResult";
 import type { MeetingResult } from "./types";
 
@@ -10,6 +10,7 @@ export interface ProcessDeps {
 export interface ProcessRequest {
   text: string; participants: string; context: string; language: string;
   media: { label: string; mimeType: string; base64: string }[];
+  sessionType?: SessionType;
 }
 export interface ProcessOutput {
   result: MeetingResult;
@@ -20,7 +21,7 @@ export async function processMeeting(req: ProcessRequest, deps: ProcessDeps): Pr
   const transcripts = await Promise.all(
     req.media.map(async (m) => ({ label: m.label, text: await deps.transcribe(m) })));
   const raw = buildRawText({ text: req.text, participants: req.participants, context: req.context, media: transcripts });
-  const prompt = buildClaudePrompt(raw, req.language);
+  const prompt = buildClaudePrompt(raw, req.language, req.sessionType ?? "Meeting");
   const first = await deps.callModel(prompt);
   try { return { result: parseResult(first), rawText: raw }; } catch { /* retry once */ }
   const second = await deps.callModel(prompt);

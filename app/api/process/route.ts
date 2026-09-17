@@ -8,7 +8,8 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { result, rawText } = await processMeeting(
       { text: body.text ?? "", participants: body.participants ?? "", context: body.context ?? "",
-        language: body.language ?? "vi", media: body.media ?? [] },
+        language: body.language ?? "vi", media: body.media ?? [],
+        sessionType: body.meetingType === "Interview" ? "Interview" : "Meeting" },
       { transcribe: transcribeMedia, callModel: callGreenode });
     return NextResponse.json({ ...result, rawText });
   } catch (e) {

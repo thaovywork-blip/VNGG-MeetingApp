@@ -29,6 +29,20 @@ test("claude prompt instructs the model not to assign PIC or classify decided/pr
   expect(p.toLowerCase()).toContain("do not assign a person-in-charge (pic)");
   expect(p).not.toContain('"pic"');
 });
+test("claude prompt structures the summary for Meeting sessions with Attendees / Meeting Content / Other Notes", () => {
+  const p = buildClaudePrompt("x", "en", "Meeting");
+  expect(p).toContain("## Attendees");
+  expect(p).toContain("## Meeting Content");
+  expect(p).toContain("## Other Notes");
+});
+test("claude prompt structures the summary for Interview sessions with the five candidate headings", () => {
+  const p = buildClaudePrompt("x", "en", "Interview");
+  expect(p).toContain("## Working Experience");
+  expect(p).toContain("## Functional Skill");
+  expect(p).toContain("## Motivation");
+  expect(p).toContain("## Game Interest");
+  expect(p).toContain("## Others");
+});
 test("recheck prompt tells the model to keep pic unchanged and echo it back", () => {
   const p = buildRecheckPrompt("original", '{"tasks":[]}', "en");
   expect(p).toContain("original");

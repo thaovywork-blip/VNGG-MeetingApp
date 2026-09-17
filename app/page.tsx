@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import InputPanel, { type InputValue, type OutputLanguage } from "@/components/InputPanel";
+import InputPanel, { type InputValue, type OutputLanguage, type SessionType } from "@/components/InputPanel";
 import PrintDocument from "@/components/PrintDocument";
 import ProgressState, { type ProgressPhase } from "@/components/ProgressState";
 import ResultView from "@/components/ResultView";
@@ -84,6 +84,7 @@ function applyTaskEdit(task: Task, field: keyof Task, value: string): Task {
 export default function Home() {
   const [input, setInput] = useState<InputValue>(EMPTY_INPUT);
   const [outputLang, setOutputLang] = useState<OutputLanguage>("English");
+  const [meetingType, setMeetingType] = useState<SessionType>("Meeting");
   const [phase, setPhase] = useState<ProgressPhase | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<MeetingResult | null>(null);
@@ -119,6 +120,7 @@ export default function Home() {
           participants: input.participants,
           context: input.context,
           language: outputLang,
+          meetingType,
           media,
         }),
       });
@@ -495,6 +497,8 @@ export default function Home() {
               busy={busy}
               language={outputLang}
               onLanguageChange={setOutputLang}
+              sessionType={meetingType}
+              onSessionTypeChange={setMeetingType}
             />
             {error && (
               <div className="flex items-start gap-2.5 rounded-xl border border-red-200 bg-[#FEF2F2] px-4 py-3 text-sm text-red-700">
