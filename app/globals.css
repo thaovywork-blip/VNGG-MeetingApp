@@ -229,3 +229,19 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .notely-heart-deco { animation: none; }
 }
+
+/* Tagline under NOTELY — same Baloo font + same pink gradient, smaller size */
+.notely-tagline {
+  display: inline-block;
+  font-family: var(--font-baloo), system-ui, sans-serif;
+  font-weight: 700;
+  font-size: clamp(0.8rem, 1.9vw, 1.05rem);
+  line-height: 1.15;
+  letter-spacing: 0.005em;
+  background: linear-gradient(180deg, #ffb3d9 0%, #ff6fa8 35%, #e0408a 65%, #b8226a 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 1px 1px rgba(184, 34, 106, 0.30));
+}
