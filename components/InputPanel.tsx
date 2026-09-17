@@ -6,7 +6,6 @@ import { toast } from "sonner";
 export interface InputValue {
   text: string;
   participants: string;
-  context: string;
   files: File[];
 }
 
@@ -42,7 +41,12 @@ function isTextFile(file: File): boolean {
 }
 
 function isSupportedMedia(file: File): boolean {
-  return file.type.startsWith("image/") || file.type.startsWith("audio/");
+  return (
+    file.type.startsWith("image/") ||
+    file.type.startsWith("audio/") ||
+    file.type === "application/pdf" ||
+    file.name.toLowerCase().endsWith(".pdf")
+  );
 }
 
 export default function InputPanel({
@@ -58,8 +62,7 @@ export default function InputPanel({
   const [dragActive, setDragActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const isEmpty =
-    !value.text.trim() && !value.participants.trim() && !value.context.trim() && value.files.length === 0;
+  const isEmpty = !value.text.trim() && !value.participants.trim() && value.files.length === 0;
   const canSubmit = !busy && (value.text.trim().length > 0 || value.files.length > 0);
 
   // Shared by both the file picker and drag-and-drop, so every guard below applies to
@@ -146,13 +149,13 @@ export default function InputPanel({
             onClick={() => fileInputRef.current?.click()}
             className="rounded-md border border-dashed border-[var(--border)] px-3 py-1.5 text-xs font-medium text-[var(--text)] transition-colors hover:bg-[var(--surface-2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
           >
-            + Add image / audio / .txt
+            + Add image / audio / PDF / .txt
           </button>
           <input
             ref={fileInputRef}
             type="file"
             multiple
-            accept="image/*,audio/*,.txt"
+            accept="image/*,audio/*,application/pdf,.pdf,.txt"
             className="hidden"
             onChange={(e) => {
               if (e.target.files?.length) void addFiles(e.target.files);
@@ -184,29 +187,18 @@ export default function InputPanel({
         )}
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <label className="flex flex-col gap-1.5 text-sm">
-          <span className="font-medium text-[var(--text)]">Participants</span>
-          <input
-            value={value.participants}
-            onChange={(e) => onChange({ ...value, participants: e.target.value })}
-            placeholder="e.g. Alice, Bob, Carol…"
-            className="rounded-lg border border-[var(--border)] px-3 py-2 text-sm text-[var(--text)] transition-colors focus:border-[var(--accent)] focus:outline-none focus:ring-[3px] focus:ring-[var(--ring)]"
-          />
-        </label>
-        <label className="flex flex-col gap-1.5 text-sm">
-          <span className="font-medium text-[var(--text)]">Context (optional)</span>
-          <input
-            value={value.context}
-            onChange={(e) => onChange({ ...value, context: e.target.value })}
-            placeholder="e.g. Sprint review, Project X…"
-            className="rounded-lg border border-[var(--border)] px-3 py-2 text-sm text-[var(--text)] transition-colors focus:border-[var(--accent)] focus:outline-none focus:ring-[3px] focus:ring-[var(--ring)]"
-          />
-        </label>
-      </div>
+      <label className="flex flex-col gap-1.5 text-sm">
+        <span className="font-medium text-[var(--text)]">Participants</span>
+        <input
+          value={value.participants}
+          onChange={(e) => onChange({ ...value, participants: e.target.value })}
+          placeholder="e.g. Alice, Bob, Carol…"
+          className="rounded-lg border border-[var(--border)] px-3 py-2 text-sm text-[var(--text)] transition-colors focus:border-[var(--accent)] focus:outline-none focus:ring-[3px] focus:ring-[var(--ring)]"
+        />
+      </label>
 
       <div className="flex flex-col gap-1.5 text-sm">
-        <span className="font-medium text-[var(--text)]">Type</span>
+        <span className="font-medium text-[var(--text)]">Context type</span>
         <div
           role="group"
           aria-label="Session type"

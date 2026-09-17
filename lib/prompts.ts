@@ -2,6 +2,8 @@ export const GEMINI_IMAGE_PROMPT =
   "Read all the text visible in this image and transcribe it as plain text. Return only the text, with no explanation.";
 export const GEMINI_AUDIO_PROMPT =
   "Listen to this audio recording and produce a full transcript, preserving the original meaning. Return only the text, with no explanation.";
+export const GEMINI_PDF_PROMPT =
+  "Read all the text and content from this PDF document and transcribe it as plain text, preserving the meaning and structure. Return only the text, with no explanation.";
 
 export type SessionType = "Meeting" | "Interview";
 

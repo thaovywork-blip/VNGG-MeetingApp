@@ -13,7 +13,7 @@ import type { MeetingResult, Task } from "@/lib/types";
 
 type View = "input" | "result" | "saved";
 
-const EMPTY_INPUT: InputValue = { text: "", participants: "", context: "", files: [] };
+const EMPTY_INPUT: InputValue = { text: "", participants: "", files: [] };
 
 interface Media {
   label: string;
@@ -36,17 +36,19 @@ function fileToBase64(file: File): Promise<string> {
 
 // InputPanel already rejects unsupported/oversized files before they reach here (both via
 // the file picker and drag-and-drop), so this is a defensive re-classification rather than
-// the primary guard: only recognized image/audio files are ever sent to Gemini as media.
+// the primary guard: only recognized image/audio/PDF files are ever sent to Gemini as media.
 async function filesToMedia(files: File[]): Promise<Media[]> {
   let imageCount = 0;
   let audioCount = 0;
+  let pdfCount = 0;
   const media: Media[] = [];
   for (const file of files) {
     const isImage = file.type.startsWith("image/");
     const isAudio = file.type.startsWith("audio/");
-    if (!isImage && !isAudio) continue;
+    const isPdf = file.type === "application/pdf";
+    if (!isImage && !isAudio && !isPdf) continue;
     const base64 = await fileToBase64(file);
-    const label = isImage ? `Image ${++imageCount}` : `Audio ${++audioCount}`;
+    const label = isImage ? `Image ${++imageCount}` : isAudio ? `Audio ${++audioCount}` : `PDF ${++pdfCount}`;
     media.push({ label, mimeType: file.type, base64 });
   }
   return media;
@@ -118,7 +120,7 @@ export default function Home() {
         body: JSON.stringify({
           text: input.text,
           participants: input.participants,
-          context: input.context,
+          context: "",
           language: outputLang,
           meetingType,
           media,
@@ -139,7 +141,7 @@ export default function Home() {
       setPhase(null);
       setError(message);
       toast.error(message);
-      // Input (text/participants/context/files) is left untouched so the user can retry.
+      // Input (text/participants/files) is left untouched so the user can retry.
     }
   }
 

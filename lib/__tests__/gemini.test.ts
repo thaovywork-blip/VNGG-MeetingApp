@@ -13,3 +13,9 @@ test("returns transcribed text for audio", async () => {
   const out = await transcribeMedia({ mimeType: "audio/mp3", base64: "AAAA" });
   expect(out).toBe("NỘI DUNG");
 });
+
+test("returns transcribed text for PDF", async () => {
+  process.env.GEMINI_API_KEY = "k";
+  const out = await transcribeMedia({ mimeType: "application/pdf", base64: "AAAA" });
+  expect(out).toBe("NỘI DUNG");
+});
