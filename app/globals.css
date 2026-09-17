@@ -235,7 +235,7 @@ body {
   display: inline-block;
   font-family: var(--font-baloo), system-ui, sans-serif;
   font-weight: 700;
-  font-size: clamp(0.8rem, 1.9vw, 1.05rem);
+  font-size: clamp(1.04rem, 2.47vw, 1.37rem);
   line-height: 1.15;
   letter-spacing: 0.005em;
   background: linear-gradient(180deg, #ffb3d9 0%, #ff6fa8 35%, #e0408a 65%, #b8226a 100%);
