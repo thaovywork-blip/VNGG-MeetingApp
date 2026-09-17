@@ -9,7 +9,7 @@ export async function POST(req: Request) {
     const { result, rawText } = await processMeeting(
       { text: body.text ?? "", participants: body.participants ?? "", context: body.context ?? "",
         language: body.language ?? "vi", media: body.media ?? [],
-        sessionType: body.meetingType === "Interview" ? "Interview" : "Meeting" },
+        sessionType: body.meetingType === "Interview" || body.meetingType === "Other" ? body.meetingType : "Meeting" },
       { transcribe: transcribeMedia, callModel: callGreenode });
     return NextResponse.json({ ...result, rawText });
   } catch (e) {
