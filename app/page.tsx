@@ -450,32 +450,30 @@ export default function Home() {
           </h1>
         </header>
 
-        <nav className="mx-auto flex w-full max-w-[56rem] items-center gap-1 border-b border-[var(--border)]">
+        <nav className="mx-auto flex w-fit items-center gap-1 rounded-full border border-[var(--border)] bg-[var(--surface-2)] p-1 shadow-[0_1px_3px_rgba(231,95,161,0.12)]">
           <button
             type="button"
             onClick={handleReset}
             aria-current={view !== "saved" ? "page" : undefined}
-            className={`relative px-4 py-2.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] ${
-              view !== "saved" ? "text-[var(--accent)]" : "text-[var(--text-muted)] hover:text-[var(--text)]"
+            className={`flex items-center gap-1.5 rounded-full px-5 py-2 text-sm font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] ${
+              view !== "saved"
+                ? "bg-[var(--accent)] text-white shadow-[0_3px_10px_rgba(231,95,161,0.35)]"
+                : "text-[var(--text-muted)] hover:text-[var(--text)]"
             }`}
           >
-            New meeting
-            {view !== "saved" && (
-              <span aria-hidden="true" className="absolute inset-x-0 -bottom-px h-0.5 bg-[var(--accent)]" />
-            )}
+            <span aria-hidden="true">✏️</span> New meeting
           </button>
           <button
             type="button"
             onClick={handleShowSaved}
             aria-current={view === "saved" ? "page" : undefined}
-            className={`relative px-4 py-2.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] ${
-              view === "saved" ? "text-[var(--accent)]" : "text-[var(--text-muted)] hover:text-[var(--text)]"
+            className={`flex items-center gap-1.5 rounded-full px-5 py-2 text-sm font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] ${
+              view === "saved"
+                ? "bg-[var(--accent)] text-white shadow-[0_3px_10px_rgba(231,95,161,0.35)]"
+                : "text-[var(--text-muted)] hover:text-[var(--text)]"
             }`}
           >
-            Saved meetings
-            {view === "saved" && (
-              <span aria-hidden="true" className="absolute inset-x-0 -bottom-px h-0.5 bg-[var(--accent)]" />
-            )}
+            <span aria-hidden="true">💾</span> Saved meetings
           </button>
         </nav>
 
