@@ -418,7 +418,7 @@ export default function Home() {
             </h1>
           </div>
           <p className="text-sm text-[var(--text-muted)]">
-            Paste notes, or upload a board photo / voice recording — AI turns it into minutes and an action
+            Paste notes, or upload an image / PDF / voice recording — AI turns it into minutes and an action
             list.
           </p>
         </header>

@@ -10,7 +10,7 @@ export interface InputValue {
 }
 
 export type OutputLanguage = "English" | "Vietnamese" | "Chinese";
-export type SessionType = "Meeting" | "Interview";
+export type SessionType = "Meeting" | "Interview" | "Other";
 
 interface InputPanelProps {
   value: InputValue;
@@ -34,6 +34,7 @@ const LANGUAGE_OPTIONS: { value: OutputLanguage; label: string }[] = [
 const SESSION_TYPE_OPTIONS: { value: SessionType; label: string }[] = [
   { value: "Meeting", label: "Meeting" },
   { value: "Interview", label: "Interview" },
+  { value: "Other", label: "Other" },
 ];
 
 function isTextFile(file: File): boolean {

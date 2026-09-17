@@ -7,7 +7,7 @@ interface ProgressStateProps {
 }
 
 const ALL_STEPS: { key: ProgressPhase; label: string }[] = [
-  { key: "reading", label: "Reading image / audio…" },
+  { key: "reading", label: "Reading image / audio / PDF…" },
   { key: "writing", label: "Writing minutes…" },
 ];
 

@@ -43,6 +43,14 @@ test("claude prompt structures the summary for Interview sessions with the five 
   expect(p).toContain("## Game Interest");
   expect(p).toContain("## Others");
 });
+test("claude prompt for Other sessions is freestyle but still grouped into topics", () => {
+  const p = buildClaudePrompt("x", "en", "Other");
+  expect(p.toLowerCase()).toContain("freestyle");
+  expect(p.toLowerCase()).toContain("grouped into small topics");
+  expect(p).toContain('"## "');
+  expect(p).not.toContain("## Working Experience");
+  expect(p).not.toContain("## Attendees");
+});
 test("claude prompt enforces the [Type] - <topic> title format per session type", () => {
   expect(buildClaudePrompt("x", "en", "Meeting")).toContain("[Meeting] - ");
   expect(buildClaudePrompt("x", "en", "Interview")).toContain("[Interview] - ");

@@ -5,7 +5,7 @@ export const GEMINI_AUDIO_PROMPT =
 export const GEMINI_PDF_PROMPT =
   "Read all the text and content from this PDF document and transcribe it as plain text, preserving the meaning and structure. Return only the text, with no explanation.";
 
-export type SessionType = "Meeting" | "Interview";
+export type SessionType = "Meeting" | "Interview" | "Other";
 
 const INTERVIEW_SUMMARY_INSTRUCTION = `2. Write a CONCISE but COMPLETE candidate summary into "summary", grouping the candidate information under EXACTLY these headings, IN THIS ORDER (use this exact heading text), using this EXACT markdown-style convention:
    - "## Working Experience"
@@ -21,6 +21,15 @@ const MEETING_SUMMARY_INSTRUCTION = `2. Write a CONCISE but COMPLETE set of meet
    - "## Other Notes" — one or more "- " bullet lines for anything else worth recording (omit this heading entirely if there is nothing to note).
    Each heading is a line starting with "## " followed by the exact heading text above. Use "\\n" line breaks between every line (heading and bullet lines alike). Create AS MANY topic bullets under "## Meeting Content" as the meeting's content needs — adaptive length, NO fixed count. Each bullet is ONE short line — NO filler, NO repetition, NO long prose. It must still be complete — do not omit a key topic or decision just to stay short — but say it in as few words as possible, while covering every key topic, decision, and action item.`;
 
+const OTHER_SUMMARY_INSTRUCTION = `2. Write a CONCISE but COMPLETE summary into "summary", FREESTYLE according to the actual content (no fixed set of headings) but STILL GROUPED into small topics, using this EXACT markdown-style convention:
+   - Each topic is a heading line starting with "## " followed by a short topic name that fits the content.
+   - Under each topic, one or more bullet lines each starting with "- ", one concise point per line.
+   - Use "\\n" line breaks between every line (heading and bullet lines alike). Create AS MANY topics and bullets as the content needs — adaptive length, NO fixed count.
+   Each bullet is ONE short line — NO filler, NO repetition, NO long prose. It must still be complete — do not omit a key point just to stay short — but say it in as few words as possible, while covering every key point.`;
+
+const OTHER_TASKS_INSTRUCTION =
+  "3. Extract any action items or follow-ups as a list of tasks: for each one, separate out the task description (task), the deadline (deadline), and a short note if needed (note). If there are none, return an empty tasks list.";
+
 const INTERVIEW_TASKS_INSTRUCTION =
   "3. Extract the follow-up actions (e.g. next interview round, send assessment) as a list of tasks: for each one, separate out the task description (task), the deadline (deadline), and a short note if needed (note) — e.g. context or additional remarks.";
 
@@ -28,10 +37,20 @@ const MEETING_TASKS_INSTRUCTION =
   "3. Extract the concrete decisions and action items as a list of tasks: for each one, separate out the task description (task), the deadline (deadline), and a short note if needed (note) — e.g. context or additional remarks.";
 
 export function buildClaudePrompt(rawText: string, language: string, sessionType: SessionType = "Meeting"): string {
-  const isInterview = sessionType === "Interview";
-  const sourceLabel = isInterview ? "candidate interview" : "meeting";
-  const summaryInstruction = isInterview ? INTERVIEW_SUMMARY_INSTRUCTION : MEETING_SUMMARY_INSTRUCTION;
-  const tasksInstruction = isInterview ? INTERVIEW_TASKS_INSTRUCTION : MEETING_TASKS_INSTRUCTION;
+  const sourceLabel =
+    sessionType === "Interview" ? "candidate interview" : sessionType === "Other" ? "session" : "meeting";
+  const summaryInstruction =
+    sessionType === "Interview"
+      ? INTERVIEW_SUMMARY_INSTRUCTION
+      : sessionType === "Other"
+        ? OTHER_SUMMARY_INSTRUCTION
+        : MEETING_SUMMARY_INSTRUCTION;
+  const tasksInstruction =
+    sessionType === "Interview"
+      ? INTERVIEW_TASKS_INSTRUCTION
+      : sessionType === "Other"
+        ? OTHER_TASKS_INSTRUCTION
+        : MEETING_TASKS_INSTRUCTION;
 
   return `You are an assistant that writes meeting minutes. Below are the raw notes from a ${sourceLabel} (possibly merged from multiple sources).
 
