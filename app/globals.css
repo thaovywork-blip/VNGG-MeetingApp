@@ -1,16 +1,16 @@
 @import "tailwindcss";
 
 :root {
-  --bg: #FDF2F7;
-  --surface: #FFFFFF;
-  --surface-2: #FBE7F1;
-  --border: #F3D6E4;
-  --text: #3A2A31;
-  --text-muted: #8C6E7B;
+  --bg: #0B0A0C;
+  --surface: #171519;
+  --surface-2: #221E26;
+  --border: #322C38;
+  --text: #F6EEF2;
+  --text-muted: #B49FAC;
   --accent: #E75FA1;
-  --accent-hover: #D64A8E;
-  --accent-soft: #FBE3EF;
-  --ring: rgba(231, 95, 161, 0.32);
+  --accent-hover: #F06CB0;
+  --accent-soft: #351F2C;
+  --ring: rgba(231, 95, 161, 0.42);
 }
 
 @theme inline {
@@ -215,4 +215,17 @@ body {
   vertical-align: -0.06em;
   flex-shrink: 0;
   filter: drop-shadow(0 2px 3px rgba(180, 130, 20, 0.45)) drop-shadow(0 1px 0 rgba(255, 255, 255, 0.4));
+}
+
+/* Small scattered gold hearts around the NOTELY wordmark */
+@keyframes notely-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+.notely-heart-deco {
+  filter: drop-shadow(0 2px 2px rgba(180, 130, 20, 0.30));
+  animation: notely-float 3.2s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .notely-heart-deco { animation: none; }
 }

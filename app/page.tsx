@@ -110,6 +110,19 @@ function Wordmark() {
   );
 }
 
+// Small decorative gold heart used for the scattered accents around the wordmark.
+function MiniHeart({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 22" aria-hidden="true" className={className}>
+      <path
+        d="M12 20.5C12 20.5 1.8 13.2 1.8 6.9A5.2 5.2 0 0 1 12 5.4A5.2 5.2 0 0 1 22.2 6.9C22.2 13.2 12 20.5 12 20.5Z"
+        fill="#E4B24A"
+      />
+      <ellipse cx="8" cy="7.5" rx="2.5" ry="1.6" fill="#FBEBB0" opacity="0.75" />
+    </svg>
+  );
+}
+
 function applyTaskEdit(task: Task, field: keyof Task, value: string): Task {
   switch (field) {
     case "task":
@@ -444,8 +457,23 @@ export default function Home() {
         </div>
       )}
       <main className="relative z-10 mx-auto flex w-full flex-1 flex-col gap-8">
-        <header className="mx-auto flex w-full max-w-[56rem] flex-col items-center gap-2">
-          <h1>
+        <header className="relative mx-auto flex w-full max-w-[56rem] flex-col items-center gap-2">
+          <span aria-hidden="true" className="pointer-events-none absolute left-1/2 top-0 -translate-x-[168px] rotate-[-15deg]">
+            <MiniHeart className="notely-heart-deco h-4 w-4" />
+          </span>
+          <span aria-hidden="true" className="pointer-events-none absolute left-1/2 top-[14px] translate-x-[150px] rotate-[15deg]">
+            <MiniHeart className="notely-heart-deco h-5 w-5 [animation-delay:600ms]" />
+          </span>
+          <span aria-hidden="true" className="pointer-events-none absolute left-1/2 top-[38px] -translate-x-[205px] rotate-[10deg]">
+            <MiniHeart className="notely-heart-deco h-3.5 w-3.5 [animation-delay:1100ms]" />
+          </span>
+          <span aria-hidden="true" className="pointer-events-none absolute left-1/2 top-[42px] translate-x-[188px] rotate-[-10deg]">
+            <MiniHeart className="notely-heart-deco h-4 w-4 [animation-delay:300ms]" />
+          </span>
+          <span aria-hidden="true" className="pointer-events-none absolute left-1/2 -top-[10px] -translate-x-[6px] rotate-[8deg]">
+            <MiniHeart className="notely-heart-deco h-3 w-3 [animation-delay:900ms]" />
+          </span>
+          <h1 className="relative z-10">
             <Wordmark />
           </h1>
         </header>
