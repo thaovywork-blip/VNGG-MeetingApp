@@ -73,8 +73,41 @@ function errorCodeFrom(e: unknown): string {
 
 // The "NOTELY" wordmark — glossy pink 3D "balloon" lettering: a rounded chunky face
 // (Baloo 2) with a pink gradient fill and a soft drop shadow for a shiny, inflated look.
+// The letter "O" is swapped for an inline gold-heart SVG (metallic vertical gradient +
+// highlight), sized and aligned to sit inline with the surrounding letters.
 function Wordmark() {
-  return <span className="notely-wordmark">NOTELY</span>;
+  return (
+    <span className="notely-wordmark" aria-label="NOTELY">
+      <span aria-hidden="true">N</span>
+      <svg
+        className="notely-heart"
+        aria-hidden="true"
+        viewBox="0 0 32 32"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <defs>
+          <linearGradient id="notely-heart-gold" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#F7E08C" />
+            <stop offset="50%" stopColor="#E3B84E" />
+            <stop offset="100%" stopColor="#C9971F" />
+          </linearGradient>
+          <linearGradient id="notely-heart-highlight" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.75" />
+            <stop offset="100%" stopColor="#FFFFFF" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        <path
+          d="M16 28.5c-.35 0-.7-.1-1-.3C9.5 24.3 3 19 3 12.6 3 7.9 6.7 4.5 11 4.5c2.1 0 4.1 1 5.5 2.7 1.4-1.7 3.4-2.7 5.5-2.7 4.3 0 8 3.4 8 8.1 0 6.4-6.5 11.7-12 15.6-.3.2-.65.3-1 .3Z"
+          fill="url(#notely-heart-gold)"
+        />
+        <path
+          d="M9.5 8.8c1.6-1.4 4.4-1.5 5.8.6.5.7-.4 1.5-1 .9-1.1-1.3-2.9-1.4-4-.4-.6.5-1.4-.5-.8-1.1Z"
+          fill="url(#notely-heart-highlight)"
+        />
+      </svg>
+      <span aria-hidden="true">TELY</span>
+    </span>
+  );
 }
 
 function applyTaskEdit(task: Task, field: keyof Task, value: string): Task {

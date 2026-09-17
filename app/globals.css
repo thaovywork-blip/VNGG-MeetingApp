@@ -1,16 +1,16 @@
 @import "tailwindcss";
 
 :root {
-  --bg: #F6EFE4;
-  --surface: #FFFDF9;
-  --surface-2: #F1E8D9;
-  --border: #E4D8C4;
-  --text: #1B1714;
-  --text-muted: #6E6357;
-  --accent: #8A1E2B;
-  --accent-hover: #6F1622;
-  --accent-soft: #F3E1DD;
-  --ring: rgba(138, 30, 43, 0.30);
+  --bg: #FDF2F7;
+  --surface: #FFFFFF;
+  --surface-2: #FBE7F1;
+  --border: #F3D6E4;
+  --text: #3A2A31;
+  --text-muted: #8C6E7B;
+  --accent: #E75FA1;
+  --accent-hover: #D64A8E;
+  --accent-soft: #FBE3EF;
+  --ring: rgba(231, 95, 161, 0.32);
 }
 
 @theme inline {
@@ -24,7 +24,7 @@ body {
   font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
 }
 
-/* Notely spotlight — a soft, low-opacity cream glow behind the page header/empty
+/* Notely spotlight — a soft, low-opacity blush glow behind the page header/empty
    state, echoing the brand mark's spotlight without competing with body text. */
 .notely-spotlight {
   position: relative;
@@ -38,7 +38,7 @@ body {
   width: 640px;
   height: 360px;
   transform: translateX(-50%);
-  background: radial-gradient(ellipse at center, rgba(255, 253, 249, 0.9) 0%, rgba(255, 253, 249, 0.35) 45%, rgba(255, 253, 249, 0) 72%);
+  background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.35) 45%, rgba(255, 255, 255, 0) 72%);
   pointer-events: none;
   z-index: 0;
 }
@@ -184,20 +184,35 @@ body {
   }
 }
 
-/* Glossy pink 3D "balloon" NOTELY wordmark (rounded Baloo face + pink gradient + soft shadow) */
+/* Glossy pink 3D "balloon" NOTELY wordmark (rounded Baloo face + pink gradient + soft shadow).
+   Deepened from a lighter pink so the letters stay legible against the pastel-pink page
+   background (--bg), rather than the original cream one. */
 .notely-wordmark {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
   font-family: var(--font-baloo), system-ui, sans-serif;
   font-weight: 800;
   font-size: clamp(2rem, 4.5vw, 2.75rem);
   line-height: 1;
   letter-spacing: 0.005em;
-  background: linear-gradient(180deg, #ffd0e2 0%, #ff8fbc 38%, #f0619b 66%, #d83e83 100%);
+  background: linear-gradient(180deg, #ffb3d9 0%, #ff6fa8 35%, #e0408a 65%, #b8226a 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
   -webkit-text-fill-color: transparent;
   filter: drop-shadow(0 1px 0 rgba(255, 255, 255, 0.55))
-    drop-shadow(0 3px 2px rgba(216, 62, 131, 0.35))
-    drop-shadow(0 6px 8px rgba(216, 62, 131, 0.22));
+    drop-shadow(0 3px 2px rgba(184, 34, 106, 0.35))
+    drop-shadow(0 6px 8px rgba(184, 34, 106, 0.22));
+}
+
+/* Gold heart standing in for the letter "O" in NOTELY — sized to the surrounding
+   letters' height and nudged to sit on the same visual baseline as the text. */
+.notely-heart {
+  display: inline-block;
+  width: 0.78em;
+  height: 0.78em;
+  margin: 0 0.02em;
+  vertical-align: -0.06em;
+  flex-shrink: 0;
+  filter: drop-shadow(0 2px 3px rgba(180, 130, 20, 0.45)) drop-shadow(0 1px 0 rgba(255, 255, 255, 0.4));
 }
