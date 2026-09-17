@@ -8,7 +8,7 @@ interface ProgressStateProps {
 
 const ALL_STEPS: { key: ProgressPhase; label: string }[] = [
   { key: "reading", label: "Reading image / audio / PDF…" },
-  { key: "writing", label: "Writing minutes…" },
+  { key: "writing", label: "Meeting minutes say hi…" },
 ];
 
 export default function ProgressState({ phase, hasMedia = true }: ProgressStateProps) {
