@@ -47,6 +47,32 @@ export default function PrintDocument({ result, date }: PrintDocumentProps) {
                 </ul>
               );
             }
+            if (block.type === "table") {
+              return (
+                <table key={index} className="pd-table pd-minutes-table">
+                  <thead>
+                    <tr>
+                      {block.headers.map((header, headerIndex) => (
+                        <th key={headerIndex} className="pd-th">
+                          {header}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {block.rows.map((row, rowIndex) => (
+                      <tr key={rowIndex}>
+                        {row.map((cell, cellIndex) => (
+                          <td key={cellIndex} className="pd-td">
+                            {cell}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              );
+            }
             return (
               <p key={index} className="pd-paragraph">
                 {block.text}

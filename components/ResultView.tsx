@@ -142,7 +142,11 @@ interface SummaryContentProps {
 function SummaryContent({ summary }: SummaryContentProps) {
   const hasStructure = summary.split("\n").some((line) => {
     const trimmed = line.trim();
-    return trimmed.startsWith("## ") || BULLET_PREFIXES.some((prefix) => trimmed.startsWith(prefix));
+    return (
+      trimmed.startsWith("## ") ||
+      BULLET_PREFIXES.some((prefix) => trimmed.startsWith(prefix)) ||
+      (trimmed.length >= 2 && trimmed.startsWith("|") && trimmed.endsWith("|"))
+    );
   });
 
   if (!hasStructure) {
@@ -179,6 +183,40 @@ function SummaryContent({ summary }: SummaryContentProps) {
                 </li>
               ))}
             </ul>
+          );
+        }
+        if (block.type === "table") {
+          return (
+            <div
+              key={index}
+              className="overflow-x-auto rounded-xl border border-[var(--border)]"
+            >
+              <table className="w-full min-w-[480px] border-collapse text-sm">
+                <thead>
+                  <tr className="bg-[var(--surface-2)]">
+                    {block.headers.map((header, headerIndex) => (
+                      <th
+                        key={headerIndex}
+                        className="border-b border-[var(--border)] px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]"
+                      >
+                        {header}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {block.rows.map((row, rowIndex) => (
+                    <tr key={rowIndex} className="border-b border-[var(--border)] last:border-b-0">
+                      {row.map((cell, cellIndex) => (
+                        <td key={cellIndex} className="px-3 py-2 align-top text-[var(--text)]">
+                          {cell}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           );
         }
         return (

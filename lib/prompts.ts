@@ -17,9 +17,13 @@ const INTERVIEW_SUMMARY_INSTRUCTION = `2. Write a CONCISE but COMPLETE candidate
 
 const MEETING_SUMMARY_INSTRUCTION = `2. Write a CONCISE but COMPLETE set of meeting minutes into "summary", using this EXACT markdown-style convention with these headings:
    - "## Attendees" — one or more "- " bullet lines listing the attendees (and role/title if mentioned).
-   - "## Meeting Content" — the discussion GROUPED BY TOPIC; each key topic as one or more "- " bullet lines capturing the discussion (and the owner in parentheses if identifiable).
+   - "## Meeting Content" — the discussion GROUPED BY TOPIC, written as a GitHub-style markdown TABLE directly under the heading, in EXACTLY this shape:
+     "| No. | Topic | Discussion | Owner |"
+     "| --- | --- | --- | --- |"
+     "| 1 | <short topic> | <concise discussion of that topic> | <owner name, or — if unknown> |"
+     One row per key topic, numbered from 1. Keep each cell concise — no filler, no repetition, no long prose. Put "—" in the Owner cell when the owner isn't identifiable. Do NOT put "|" characters inside a cell.
    - "## Other Notes" — one or more "- " bullet lines for anything else worth recording (omit this heading entirely if there is nothing to note).
-   Each heading is a line starting with "## " followed by the exact heading text above. Use "\\n" line breaks between every line (heading and bullet lines alike). Create AS MANY topic bullets under "## Meeting Content" as the meeting's content needs — adaptive length, NO fixed count. Each bullet is ONE short line — NO filler, NO repetition, NO long prose. It must still be complete — do not omit a key topic or decision just to stay short — but say it in as few words as possible, while covering every key topic, decision, and action item.`;
+   Each heading is a line starting with "## " followed by the exact heading text above. Use "\\n" line breaks between every line (heading, table, and bullet lines alike). Create AS MANY rows under "## Meeting Content" as the meeting's content needs — adaptive length, NO fixed count. Keep "## Attendees" and "## Other Notes" as "- " bullet lists exactly as described. It must still be complete — do not omit a key topic or decision just to stay short — but say it in as few words as possible, while covering every key topic, decision, and action item.`;
 
 const OTHER_SUMMARY_INSTRUCTION = `2. Write a CONCISE but COMPLETE summary into "summary", FREESTYLE according to the actual content (no fixed set of headings) but STILL GROUPED into small topics, using this EXACT markdown-style convention:
    - Each topic is a heading line starting with "## " followed by a short topic name that fits the content.
@@ -74,7 +78,7 @@ ${rawText}
 export function buildRecheckPrompt(rawText: string, currentJson: string, language: string): string {
   return `Here are the original raw notes and the current result table (which may contain errors).
 Re-read the original notes, then review and correct the task/deadline/note fields as needed. The current table has a "pic" field that the user typed in by hand for each task — KEEP each task's "pic" value UNCHANGED, echo it back exactly as given, and do NOT add, edit, or remove any PIC yourself. The current table also has a "title" field — KEEP it as is, or refine it slightly to be more concise if needed, but do NOT leave it blank, and KEEP any leading type prefix like "[Meeting] - " or "[Interview] - " if present.
-Also keep/refine the "summary" so it stays CONCISE but COMPLETE and GROUPED BY TOPIC using this EXACT markdown-style convention: each topic is a heading line starting with "## " followed by a short topic name, and under each topic one or more bullet lines each starting with "- ", one concise point per line, with "\\n" line breaks between every line. Let the number of topics and bullets follow the meeting's actual content (no fixed count) — but still covering every key topic, decision, and action item, with no filler or repetition.
+Also keep/refine the "summary" so it stays CONCISE but COMPLETE and GROUPED BY TOPIC using this EXACT markdown-style convention: each topic is a heading line starting with "## " followed by a short topic name, and under each topic one or more bullet lines each starting with "- ", one concise point per line, with "\\n" line breaks between every line. Also preserve any markdown TABLES in the summary (lines using "|" pipes and a "| --- |" separator row, such as under a "## Meeting Content" heading) — keep the table shape (same headers, same "| --- |" separator, same number of columns) and only correct the cell text as needed. Let the number of topics and bullets follow the meeting's actual content (no fixed count) — but still covering every key topic, decision, and action item, with no filler or repetition.
 
 Return ONLY valid JSON in exactly this shape, in language "${language}":
 {"title": string, "summary": string, "language": "${language}", "tasks": [{"task": string, "pic": string, "deadline": string, "note": string}]}
@@ -89,7 +93,7 @@ ${currentJson}`;
 }
 
 export function buildTranslatePrompt(currentJson: string, targetLanguage: string): string {
-  return `Translate ALL user-facing text of this meeting result into "${targetLanguage}", preserving the EXACT JSON schema and the summary's markdown structure ("## " topic headings and "- " bullet lines — translate the text but keep the markers and line breaks).
+  return `Translate ALL user-facing text of this meeting result into "${targetLanguage}", preserving the EXACT JSON schema and the summary's markdown structure ("## " topic headings and "- " bullet lines — translate the text but keep the markers and line breaks). Also preserve any markdown TABLES in the summary (lines using "|" pipes and a "| --- |" separator row) — translate the cell text but keep the table shape (same headers, same "| --- |" separator, same number of columns and rows).
 Translate the "title" field, the "summary" field, and each task's "task", "deadline", and "note" fields.
 IMPORTANT: do NOT translate or alter each task's "pic" field (these are people's names) — echo each "pic" value back UNCHANGED.
 Set the "language" field to "${targetLanguage}".

@@ -21,3 +21,19 @@ test("plain lines become a paragraph block", () => {
 test("empty input returns an empty array", () => {
   expect(parseSummaryBlocks("")).toEqual([]);
 });
+
+test("a markdown table (header + separator + data rows) becomes one table block, separator not included as a row", () => {
+  const blocks = parseSummaryBlocks(
+    "| No. | Topic | Discussion | Owner |\n| --- | --- | --- | --- |\n| 1 | Budget | Agreed on Q4 numbers | Alice |\n| 2 | Timeline | Slipping by two weeks | — |",
+  );
+  expect(blocks).toEqual([
+    {
+      type: "table",
+      headers: ["No.", "Topic", "Discussion", "Owner"],
+      rows: [
+        ["1", "Budget", "Agreed on Q4 numbers", "Alice"],
+        ["2", "Timeline", "Slipping by two weeks", "—"],
+      ],
+    },
+  ]);
+});
