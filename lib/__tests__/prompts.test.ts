@@ -43,6 +43,10 @@ test("claude prompt structures the summary for Interview sessions with the five 
   expect(p).toContain("## Game Interest");
   expect(p).toContain("## Others");
 });
+test("claude prompt enforces the [Type] - <topic> title format per session type", () => {
+  expect(buildClaudePrompt("x", "en", "Meeting")).toContain("[Meeting] - ");
+  expect(buildClaudePrompt("x", "en", "Interview")).toContain("[Interview] - ");
+});
 test("recheck prompt tells the model to keep pic unchanged and echo it back", () => {
   const p = buildRecheckPrompt("original", '{"tasks":[]}', "en");
   expect(p).toContain("original");

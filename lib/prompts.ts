@@ -35,7 +35,7 @@ export function buildClaudePrompt(rawText: string, language: string, sessionType
 
 Follow these steps exactly:
 0. Normalize the language: translate everything into "${language}", and interpret any slang, abbreviations, or shorthand (e.g. informal phrasing meaning "agreed" or "confirmed").
-1. Write a concise title (about 3-8 words) naming the main topic of the ${sourceLabel}, into the "title" field.
+1. Write the "title" field in EXACTLY this format: "[${sessionType}] - <main topic>" — it MUST start with the literal prefix "[${sessionType}] - ", followed by a short 3-8 word phrase naming the main topic of the ${sourceLabel} (for an interview, the candidate/role; for a meeting, the subject). Example: "[${sessionType}] - Q4 Marketing Budget".
 ${summaryInstruction}
 ${tasksInstruction}
 
@@ -52,7 +52,7 @@ ${rawText}
 
 export function buildRecheckPrompt(rawText: string, currentJson: string, language: string): string {
   return `Here are the original raw notes and the current result table (which may contain errors).
-Re-read the original notes, then review and correct the task/deadline/note fields as needed. The current table has a "pic" field that the user typed in by hand for each task — KEEP each task's "pic" value UNCHANGED, echo it back exactly as given, and do NOT add, edit, or remove any PIC yourself. The current table also has a "title" field — KEEP it as is, or refine it slightly to be more concise if needed, but do NOT leave it blank.
+Re-read the original notes, then review and correct the task/deadline/note fields as needed. The current table has a "pic" field that the user typed in by hand for each task — KEEP each task's "pic" value UNCHANGED, echo it back exactly as given, and do NOT add, edit, or remove any PIC yourself. The current table also has a "title" field — KEEP it as is, or refine it slightly to be more concise if needed, but do NOT leave it blank, and KEEP any leading type prefix like "[Meeting] - " or "[Interview] - " if present.
 Also keep/refine the "summary" so it stays CONCISE but COMPLETE and GROUPED BY TOPIC using this EXACT markdown-style convention: each topic is a heading line starting with "## " followed by a short topic name, and under each topic one or more bullet lines each starting with "- ", one concise point per line, with "\\n" line breaks between every line. Let the number of topics and bullets follow the meeting's actual content (no fixed count) — but still covering every key topic, decision, and action item, with no filler or repetition.
 
 Return ONLY valid JSON in exactly this shape, in language "${language}":
