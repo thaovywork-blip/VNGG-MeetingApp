@@ -476,7 +476,7 @@ export default function Home() {
           <h1 className="relative z-10">
             <Wordmark />
           </h1>
-          <p className="notely-tagline relative z-10">Meeting notes in, summary and tasks out.</p>
+          <p className="notely-tagline relative z-10">notes IN, meeting minutes and task OUT.</p>
         </header>
 
         <nav className="mx-auto flex w-fit items-center gap-1 rounded-full border border-[var(--border)] bg-[var(--surface-2)] p-1 shadow-[0_1px_3px_rgba(231,95,161,0.12)]">
