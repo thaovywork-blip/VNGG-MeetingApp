@@ -450,7 +450,7 @@ export default function Home() {
   const busy = phase !== null;
 
   return (
-    <div className="notely-spotlight flex flex-1 flex-col px-4 py-10 sm:px-8 sm:py-14">
+    <div className="flex flex-1 flex-col px-4 py-10 sm:px-8 sm:py-14">
       {result && (
         <div className="print-only">
           <PrintDocument result={result} date={currentDate ?? undefined} />

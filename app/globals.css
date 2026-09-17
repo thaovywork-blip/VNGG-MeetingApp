@@ -24,25 +24,6 @@ body {
   font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
 }
 
-/* Notely spotlight — a soft, low-opacity blush glow behind the page header/empty
-   state, echoing the brand mark's spotlight without competing with body text. */
-.notely-spotlight {
-  position: relative;
-}
-
-.notely-spotlight::before {
-  content: "";
-  position: absolute;
-  top: -140px;
-  left: 50%;
-  width: 640px;
-  height: 360px;
-  transform: translateX(-50%);
-  background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.35) 45%, rgba(255, 255, 255, 0) 72%);
-  pointer-events: none;
-  z-index: 0;
-}
-
 /* Print / PDF export -------------------------------------------------------
    PrintDocument (components/PrintDocument.tsx) is kept in the DOM at all times
    (wrapped in .print-only) so window.print() can turn it into a PDF, but it
