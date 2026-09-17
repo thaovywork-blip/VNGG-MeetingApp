@@ -411,21 +411,10 @@ export default function Home() {
         </div>
       )}
       <main className="relative z-10 mx-auto flex w-full flex-1 flex-col gap-8">
-        <header className="mx-auto flex w-full max-w-[56rem] flex-col gap-2">
-          <div className="flex items-center gap-3">
-            <div className="flex flex-col gap-0.5">
-              <h1>
-                <Wordmark />
-              </h1>
-              <p className="text-xs font-medium tracking-wide text-[var(--text-muted)]">
-                Meeting &amp; interview minutes
-              </p>
-            </div>
-          </div>
-          <p className="text-sm text-[var(--text-muted)]">
-            Paste notes, or upload an image / PDF / voice recording — AI turns it into minutes and an action
-            list.
-          </p>
+        <header className="mx-auto flex w-full max-w-[56rem] flex-col items-center gap-2">
+          <h1>
+            <Wordmark />
+          </h1>
         </header>
 
         <nav className="mx-auto flex w-full max-w-[56rem] items-center gap-1 border-b border-[var(--border)]">
