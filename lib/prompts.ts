@@ -55,12 +55,16 @@ export function buildClaudePrompt(rawText: string, language: string, sessionType
       : sessionType === "Other"
         ? OTHER_TASKS_INSTRUCTION
         : MEETING_TASKS_INSTRUCTION;
+  const titleInstruction =
+    sessionType === "Interview"
+      ? `1. Write the "title" field in EXACTLY this format: "[Interview] - <job title> - <candidate's full name>" — it MUST start with the literal prefix "[Interview] - ", then the job title / position the candidate is interviewing for, then " - ", then the candidate's full name. Example: "[Interview] - Social Content Executive - Nguyen Van A". If the job title or the candidate's name is not stated in the notes, put "Unspecified" for that part.`
+      : `1. Write the "title" field in EXACTLY this format: "[${sessionType}] - <main topic>" — it MUST start with the literal prefix "[${sessionType}] - ", followed by a short 3-8 word phrase naming the main topic of the ${sourceLabel}. Example: "[${sessionType}] - Q4 Marketing Budget".`;
 
   return `You are an assistant that writes meeting minutes. Below are the raw notes from a ${sourceLabel} (possibly merged from multiple sources).
 
 Follow these steps exactly:
 0. Normalize the language: translate everything into "${language}", and interpret any slang, abbreviations, or shorthand (e.g. informal phrasing meaning "agreed" or "confirmed").
-1. Write the "title" field in EXACTLY this format: "[${sessionType}] - <main topic>" — it MUST start with the literal prefix "[${sessionType}] - ", followed by a short 3-8 word phrase naming the main topic of the ${sourceLabel} (for an interview, the candidate/role; for a meeting, the subject). Example: "[${sessionType}] - Q4 Marketing Budget".
+${titleInstruction}
 ${summaryInstruction}
 ${tasksInstruction}
 

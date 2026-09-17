@@ -55,6 +55,12 @@ test("claude prompt enforces the [Type] - <topic> title format per session type"
   expect(buildClaudePrompt("x", "en", "Meeting")).toContain("[Meeting] - ");
   expect(buildClaudePrompt("x", "en", "Interview")).toContain("[Interview] - ");
 });
+test("interview title format is [Interview] - job title - candidate's full name", () => {
+  const p = buildClaudePrompt("x", "en", "Interview");
+  expect(p).toContain("[Interview] - <job title> - <candidate's full name>");
+  expect(p.toLowerCase()).toContain("job title");
+  expect(p.toLowerCase()).toContain("candidate's full name");
+});
 test("recheck prompt tells the model to keep pic unchanged and echo it back", () => {
   const p = buildRecheckPrompt("original", '{"tasks":[]}', "en");
   expect(p).toContain("original");
