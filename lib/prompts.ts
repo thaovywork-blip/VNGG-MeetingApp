@@ -44,3 +44,16 @@ ${rawText}
 CURRENT TABLE:
 ${currentJson}`;
 }
+
+export function buildTranslatePrompt(currentJson: string, targetLanguage: string): string {
+  return `Translate ALL user-facing text of this meeting result into "${targetLanguage}", preserving the EXACT JSON schema and the summary's markdown structure ("## " topic headings and "- " bullet lines — translate the text but keep the markers and line breaks).
+Translate the "title" field, the "summary" field, and each task's "task", "deadline", and "note" fields.
+IMPORTANT: do NOT translate or alter each task's "pic" field (these are people's names) — echo each "pic" value back UNCHANGED.
+Set the "language" field to "${targetLanguage}".
+
+Return ONLY valid JSON in exactly this shape:
+{"title": string, "summary": string, "language": "${targetLanguage}", "tasks": [{"task": string, "pic": string, "deadline": string, "note": string}]}
+
+ORIGINAL RESULT (JSON):
+${currentJson}`;
+}

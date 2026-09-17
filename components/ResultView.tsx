@@ -15,11 +15,13 @@ interface ResultViewProps {
   onDeleteTask: (id: string) => void;
   onAddTask: () => void;
   onRecheck: () => void;
+  onTranslate: (language: string) => void;
   onExportCsv: () => void;
   onExportPdf: () => void;
   onReset: () => void;
   onSave: () => void;
   rechecking: boolean;
+  translating: boolean;
   saving: boolean;
   saved: boolean;
   folders: Folder[];
@@ -38,11 +40,13 @@ export default function ResultView({
   onDeleteTask,
   onAddTask,
   onRecheck,
+  onTranslate,
   onExportCsv,
   onExportPdf,
   onReset,
   onSave,
   rechecking,
+  translating,
   saving,
   saved,
   folders,
@@ -64,7 +68,10 @@ export default function ResultView({
 
       <div className="flex flex-col gap-1">
         <EditableTitle value={result.title} onCommit={onTitleEdit} />
-        <p className="text-xs text-[var(--text-muted)]">{formatDateLong(date)}</p>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <p className="text-xs text-[var(--text-muted)]">{formatDateLong(date)}</p>
+          <TranslatePicker language={result.language} onTranslate={onTranslate} translating={translating} />
+        </div>
       </div>
 
       <section className="relative overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface)] py-6 pl-7 pr-6 shadow-[0_1px_2px_rgba(16,24,40,0.05)] sm:py-7 sm:pl-8 sm:pr-7">
@@ -181,6 +188,62 @@ function SummaryContent({ summary }: SummaryContentProps) {
         );
       })}
     </div>
+  );
+}
+
+const TRANSLATE_OPTIONS: { value: string; label: string }[] = [
+  { value: "English", label: "English" },
+  { value: "Vietnamese", label: "Tiếng Việt" },
+  { value: "Chinese", label: "中文" },
+];
+
+// Older saved meetings may carry a language CODE ("en"/"vi"/"zh") rather than the full
+// name the AI now writes ("English"/"Vietnamese"/"Chinese"). Normalize both so the select
+// shows the meeting's actual current language instead of falling back to a placeholder.
+function normalizeLanguage(language: string): string | null {
+  const known = TRANSLATE_OPTIONS.find((o) => o.value.toLowerCase() === language.toLowerCase());
+  if (known) return known.value;
+  const byCode: Record<string, string> = { en: "English", vi: "Vietnamese", zh: "Chinese" };
+  return byCode[language.toLowerCase()] ?? null;
+}
+
+interface TranslatePickerProps {
+  language: string;
+  onTranslate: (language: string) => void;
+  translating: boolean;
+}
+
+// Lets the user translate the current result in place (mirrors "Re-check with AI", but
+// rewrites the existing minutes into another language instead of re-deriving them from
+// the raw notes). The select's current value reflects the meeting's current language.
+function TranslatePicker({ language, onTranslate, translating }: TranslatePickerProps) {
+  const normalized = normalizeLanguage(language);
+
+  return (
+    <label className="flex items-center gap-1.5 text-xs text-[var(--text-muted)]">
+      <span className="font-medium">Translate to</span>
+      <select
+        value={normalized ?? ""}
+        onChange={(e) => {
+          if (e.target.value) onTranslate(e.target.value);
+        }}
+        disabled={translating}
+        aria-label="Translate meeting minutes to another language"
+        className="rounded-lg border border-[var(--border)] bg-[var(--surface)] px-2 py-1.5 text-xs text-[var(--text)] focus:border-[var(--accent)] focus:outline-none focus:ring-[3px] focus:ring-[var(--ring)] disabled:cursor-not-allowed disabled:opacity-50"
+      >
+        {!normalized && (
+          <option value="" disabled>
+            Select language
+          </option>
+        )}
+        {TRANSLATE_OPTIONS.map((o) => (
+          <option key={o.value} value={o.value}>
+            {o.label}
+          </option>
+        ))}
+      </select>
+      {translating && <span className="text-[var(--accent-hover)]">Translating…</span>}
+    </label>
   );
 }
 

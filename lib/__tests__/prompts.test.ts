@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { buildClaudePrompt, buildRecheckPrompt, GEMINI_AUDIO_PROMPT } from "../prompts";
+import { buildClaudePrompt, buildRecheckPrompt, buildTranslatePrompt, GEMINI_AUDIO_PROMPT } from "../prompts";
 
 test("claude prompt embeds raw text, language, JSON schema and the steps", () => {
   const p = buildClaudePrompt("RAW CONTENT", "en");
@@ -54,4 +54,25 @@ test("recheck prompt still requires the summary grouped by topic headings and bu
 });
 test("gemini audio prompt asks for a transcript", () => {
   expect(GEMINI_AUDIO_PROMPT.toLowerCase()).toContain("transcript");
+});
+test("translate prompt instructs translating into the target language", () => {
+  const p = buildTranslatePrompt('{"title":"t","summary":"s","language":"English","tasks":[]}', "Vietnamese");
+  expect(p.toLowerCase()).toContain("translate");
+  expect(p).toContain("Vietnamese");
+  expect(p).toContain('{"title":"t","summary":"s","language":"English","tasks":[]}');
+});
+test("translate prompt keeps pic unchanged", () => {
+  const p = buildTranslatePrompt('{"tasks":[]}', "Chinese");
+  expect(p.toLowerCase()).toContain("do not translate or alter");
+  expect(p.toLowerCase()).toContain("echo each \"pic\" value back unchanged");
+});
+test("translate prompt requests the JSON schema with the target language", () => {
+  const p = buildTranslatePrompt('{"tasks":[]}', "English");
+  expect(p).toContain('"title"');
+  expect(p).toContain('"summary"');
+  expect(p).toContain('"language": "English"');
+  expect(p).toContain('"tasks"');
+  expect(p).toContain('"pic"');
+  expect(p).toContain('"deadline"');
+  expect(p).toContain('"note"');
 });

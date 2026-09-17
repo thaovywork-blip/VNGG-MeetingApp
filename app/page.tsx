@@ -89,6 +89,7 @@ export default function Home() {
   const [result, setResult] = useState<MeetingResult | null>(null);
   const [rawText, setRawText] = useState<string | null>(null);
   const [rechecking, setRechecking] = useState(false);
+  const [translating, setTranslating] = useState(false);
   const [view, setView] = useState<View>("input");
   const [currentMeetingId, setCurrentMeetingId] = useState<string | null>(null);
   const [currentDate, setCurrentDate] = useState<string | null>(null);
@@ -185,6 +186,26 @@ export default function Home() {
       toast.error(friendlyMessage(errorCodeFrom(e)));
     } finally {
       setRechecking(false);
+    }
+  }
+
+  async function handleTranslate(target: string) {
+    if (!result) return;
+    setTranslating(true);
+    try {
+      const res = await fetch("/api/translate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ current: result, language: target }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error ?? "UNKNOWN");
+      setResult({ title: data.title ?? "", summary: data.summary, language: data.language, tasks: data.tasks });
+      toast.success(`Translated to ${target}.`);
+    } catch (e) {
+      toast.error(friendlyMessage(errorCodeFrom(e)));
+    } finally {
+      setTranslating(false);
     }
   }
 
@@ -451,11 +472,13 @@ export default function Home() {
             onDeleteTask={handleDeleteTask}
             onAddTask={handleAddTask}
             onRecheck={handleRecheck}
+            onTranslate={handleTranslate}
             onExportCsv={handleExportCsv}
             onExportPdf={handleExportPdf}
             onReset={handleReset}
             onSave={handleSave}
             rechecking={rechecking}
+            translating={translating}
             saving={saving}
             saved={currentMeetingId !== null}
             folders={folders}
