@@ -20,6 +20,8 @@ interface ResultViewProps {
   onExportPdf: () => void;
   onReset: () => void;
   onSave: () => void;
+  showBack?: boolean;
+  onBack?: () => void;
   rechecking: boolean;
   translating: boolean;
   saving: boolean;
@@ -45,6 +47,8 @@ export default function ResultView({
   onExportPdf,
   onReset,
   onSave,
+  showBack,
+  onBack,
   rechecking,
   translating,
   saving,
@@ -56,7 +60,18 @@ export default function ResultView({
 }: ResultViewProps) {
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
-      <div className="flex justify-end">
+      <div className="flex items-center justify-between">
+        {showBack ? (
+          <button
+            type="button"
+            onClick={onBack}
+            className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-md px-2 py-1 text-xs font-medium text-[var(--text-muted)] transition-colors hover:text-[var(--accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+          >
+            <span aria-hidden="true">←</span> Back to saved meetings
+          </button>
+        ) : (
+          <span />
+        )}
         <button
           type="button"
           onClick={onReset}

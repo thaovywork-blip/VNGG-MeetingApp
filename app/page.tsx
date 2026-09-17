@@ -146,6 +146,9 @@ export default function Home() {
   const [rechecking, setRechecking] = useState(false);
   const [translating, setTranslating] = useState(false);
   const [view, setView] = useState<View>("input");
+  // True when the current result was opened from the Saved-meetings list, so the result
+  // view shows a "Back" button to return to that list.
+  const [cameFromSaved, setCameFromSaved] = useState(false);
   const [currentMeetingId, setCurrentMeetingId] = useState<string | null>(null);
   const [currentDate, setCurrentDate] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -185,6 +188,7 @@ export default function Home() {
       setCurrentMeetingId(null);
       setCurrentDate(new Date().toISOString());
       setSaveFolderId(null);
+      setCameFromSaved(false);
       setView("result");
       setPhase(null);
       toast.success("Meeting minutes generated.");
@@ -293,7 +297,19 @@ export default function Home() {
     setCurrentMeetingId(null);
     setCurrentDate(null);
     setSaveFolderId(null);
+    setCameFromSaved(false);
     setView("input");
+  }
+
+  // Exit an opened saved meeting back to the Saved-meetings list.
+  function handleBackToSaved() {
+    setResult(null);
+    setRawText(null);
+    setError(null);
+    setCurrentMeetingId(null);
+    setCameFromSaved(false);
+    setView("saved");
+    void loadSavedMeetings();
   }
 
   async function handleSave() {
@@ -367,6 +383,7 @@ export default function Home() {
       setCurrentDate(data.date ?? null);
       setSaveFolderId(data.folderId ?? null);
       setError(null);
+      setCameFromSaved(true);
       setView("result");
     } catch (e) {
       toast.error(friendlyMessage(errorCodeFrom(e)));
@@ -535,6 +552,8 @@ export default function Home() {
             onExportPdf={handleExportPdf}
             onReset={handleReset}
             onSave={handleSave}
+            showBack={cameFromSaved}
+            onBack={handleBackToSaved}
             rechecking={rechecking}
             translating={translating}
             saving={saving}
