@@ -1,16 +1,16 @@
 @import "tailwindcss";
 
 :root {
-  --bg: #F4F5F7;
-  --surface: #FFFFFF;
-  --surface-2: #FAFAFB;
-  --border: #E5E7EB;
-  --text: #1F2937;
-  --text-muted: #6B7280;
-  --accent: #E8622C;
-  --accent-hover: #CC521F;
-  --accent-soft: #FDEDE4;
-  --ring: rgba(232, 98, 44, 0.35);
+  --bg: #F6EFE4;
+  --surface: #FFFDF9;
+  --surface-2: #F1E8D9;
+  --border: #E4D8C4;
+  --text: #1B1714;
+  --text-muted: #6E6357;
+  --accent: #8A1E2B;
+  --accent-hover: #6F1622;
+  --accent-soft: #F3E1DD;
+  --ring: rgba(138, 30, 43, 0.30);
 }
 
 @theme inline {
@@ -22,6 +22,25 @@ body {
   background: var(--bg);
   color: var(--text);
   font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
+}
+
+/* Notely spotlight — a soft, low-opacity cream glow behind the page header/empty
+   state, echoing the brand mark's spotlight without competing with body text. */
+.notely-spotlight {
+  position: relative;
+}
+
+.notely-spotlight::before {
+  content: "";
+  position: absolute;
+  top: -140px;
+  left: 50%;
+  width: 640px;
+  height: 360px;
+  transform: translateX(-50%);
+  background: radial-gradient(ellipse at center, rgba(255, 253, 249, 0.9) 0%, rgba(255, 253, 249, 0.35) 45%, rgba(255, 253, 249, 0) 72%);
+  pointer-events: none;
+  z-index: 0;
 }
 
 /* Print / PDF export -------------------------------------------------------

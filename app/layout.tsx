@@ -9,7 +9,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Notely Assistant",
+  title: "Notely",
   description: "Generate meeting minutes and an action list from notes, photos, and audio recordings.",
 };
 
