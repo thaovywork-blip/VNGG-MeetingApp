@@ -183,3 +183,21 @@ body {
     margin: 16mm 14mm;
   }
 }
+
+/* Glossy pink 3D "balloon" NOTELY wordmark (rounded Baloo face + pink gradient + soft shadow) */
+.notely-wordmark {
+  display: inline-block;
+  font-family: var(--font-baloo), system-ui, sans-serif;
+  font-weight: 800;
+  font-size: clamp(2rem, 4.5vw, 2.75rem);
+  line-height: 1;
+  letter-spacing: 0.005em;
+  background: linear-gradient(180deg, #ffd0e2 0%, #ff8fbc 38%, #f0619b 66%, #d83e83 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 1px 0 rgba(255, 255, 255, 0.55))
+    drop-shadow(0 3px 2px rgba(216, 62, 131, 0.35))
+    drop-shadow(0 6px 8px rgba(216, 62, 131, 0.22));
+}

@@ -71,43 +71,10 @@ function errorCodeFrom(e: unknown): string {
   return e instanceof Error ? e.message : "UNKNOWN";
 }
 
-// Notely brand mark: a deep-maroon rounded square with a small spotlight motif —
-// a cream "bulb" at top casting a faint cone of light down onto a small figure.
-// Purely decorative (aria-hidden); the wordmark next to it carries the name.
-function LogoMark() {
-  return (
-    <svg
-      viewBox="0 0 36 36"
-      width="36"
-      height="36"
-      aria-hidden="true"
-      className="h-8 w-8 shrink-0 rounded-lg sm:h-9 sm:w-9"
-    >
-      <rect width="36" height="36" rx="9" fill="var(--accent)" />
-      <path d="M18 9 L26 29 L10 29 Z" fill="var(--bg)" opacity="0.22" />
-      <circle cx="18" cy="9" r="2.6" fill="var(--bg)" />
-      <path d="M14.5 29 L21.5 29 L19.8 23.5 L16.2 23.5 Z" fill="var(--text)" opacity="0.88" />
-      <circle cx="18" cy="21" r="2.1" fill="var(--text)" opacity="0.88" />
-    </svg>
-  );
-}
-
-// The "NOTELY" wordmark in a heavy, letter-spaced weight. The "O" carries a small
-// cream spotlight dot in its counter as a subtle echo of the brand mark.
+// The "NOTELY" wordmark — glossy pink 3D "balloon" lettering: a rounded chunky face
+// (Baloo 2) with a pink gradient fill and a soft drop shadow for a shiny, inflated look.
 function Wordmark() {
-  return (
-    <span className="inline-flex items-baseline text-2xl font-black tracking-tight text-[var(--text)] sm:text-[28px]">
-      N
-      <span className="relative inline-flex">
-        O
-        <span
-          aria-hidden="true"
-          className="pointer-events-none absolute left-1/2 top-1/2 h-[0.16em] w-[0.16em] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[var(--bg)]"
-        />
-      </span>
-      TELY
-    </span>
-  );
+  return <span className="notely-wordmark">NOTELY</span>;
 }
 
 function applyTaskEdit(task: Task, field: keyof Task, value: string): Task {
@@ -446,7 +413,6 @@ export default function Home() {
       <main className="relative z-10 mx-auto flex w-full flex-1 flex-col gap-8">
         <header className="mx-auto flex w-full max-w-[56rem] flex-col gap-2">
           <div className="flex items-center gap-3">
-            <LogoMark />
             <div className="flex flex-col gap-0.5">
               <h1>
                 <Wordmark />
