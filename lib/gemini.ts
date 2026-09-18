@@ -12,7 +12,7 @@ export async function transcribeMedia(file: { mimeType: string; base64: string }
     const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
     const prompt = promptFor(file.mimeType);
     const res = await ai.models.generateContent({
-      model: "gemini-2.0-flash",
+      model: "gemini-3.6-flash",
       contents: [{ role: "user", parts: [
         { inlineData: { mimeType: file.mimeType, data: file.base64 } },
         { text: prompt },
