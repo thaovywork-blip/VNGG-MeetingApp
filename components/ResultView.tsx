@@ -18,7 +18,8 @@ interface ResultViewProps {
   onRecheck: () => void;
   onUpdate: (text: string, files: File[]) => void;
   onTranslate: (language: string) => void;
-  onExportCsv: () => void;
+  onExportExcel: () => void;
+  onExportWord: () => void;
   onExportPdf: () => void;
   onReset: () => void;
   onSave: () => void;
@@ -47,7 +48,8 @@ export default function ResultView({
   onRecheck,
   onUpdate,
   onTranslate,
-  onExportCsv,
+  onExportExcel,
+  onExportWord,
   onExportPdf,
   onReset,
   onSave,
@@ -128,20 +130,7 @@ export default function ResultView({
             >
               {rechecking ? "Checking…" : "Re-check with AI"}
             </button>
-            <button
-              type="button"
-              onClick={onExportCsv}
-              className="rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-xs font-medium text-[var(--text)] transition-colors hover:bg-[var(--surface-2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
-            >
-              Export CSV
-            </button>
-            <button
-              type="button"
-              onClick={onExportPdf}
-              className="rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-xs font-medium text-[var(--text)] transition-colors hover:bg-[var(--surface-2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
-            >
-              Export PDF
-            </button>
+            <ExportMenu onExportExcel={onExportExcel} onExportWord={onExportWord} onExportPdf={onExportPdf} />
           </div>
         </div>
 
@@ -149,6 +138,88 @@ export default function ResultView({
       </div>
 
       <AddInfoPanel onUpdate={onUpdate} updating={updating} />
+    </div>
+  );
+}
+
+interface ExportMenuProps {
+  onExportExcel: () => void;
+  onExportWord: () => void;
+  onExportPdf: () => void;
+}
+
+// A single "Export ▾" button that reveals a small on-brand popover with the three
+// export formats. Closes on outside click, on Escape, or after a selection.
+function ExportMenu({ onExportExcel, onExportWord, onExportPdf }: ExportMenuProps) {
+  const [open, setOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    function handlePointerDown(e: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") setOpen(false);
+    }
+    document.addEventListener("mousedown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [open]);
+
+  function select(action: () => void) {
+    action();
+    setOpen(false);
+  }
+
+  return (
+    <div ref={containerRef} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        className="inline-flex items-center gap-1 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-xs font-medium text-[var(--text)] transition-colors hover:bg-[var(--surface-2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+      >
+        Export <span aria-hidden="true" className={`text-[var(--text-muted)] transition-transform ${open ? "rotate-180" : ""}`}>▾</span>
+      </button>
+
+      {open && (
+        <div
+          role="menu"
+          className="absolute right-0 top-[calc(100%+4px)] z-20 w-44 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--surface)] py-1 shadow-[0_8px_24px_rgba(16,24,40,0.12)]"
+        >
+          <button
+            type="button"
+            role="menuitem"
+            onClick={() => select(onExportExcel)}
+            className="block w-full px-3 py-2 text-left text-xs font-medium text-[var(--text)] transition-colors hover:bg-[var(--surface-2)]"
+          >
+            Excel (.xlsx)
+          </button>
+          <button
+            type="button"
+            role="menuitem"
+            onClick={() => select(onExportWord)}
+            className="block w-full px-3 py-2 text-left text-xs font-medium text-[var(--text)] transition-colors hover:bg-[var(--surface-2)]"
+          >
+            Word (.doc)
+          </button>
+          <button
+            type="button"
+            role="menuitem"
+            onClick={() => select(onExportPdf)}
+            className="block w-full px-3 py-2 text-left text-xs font-medium text-[var(--text)] transition-colors hover:bg-[var(--surface-2)]"
+          >
+            PDF
+          </button>
+        </div>
+      )}
     </div>
   );
 }

@@ -7,7 +7,8 @@ import PrintDocument from "@/components/PrintDocument";
 import ProgressState, { type ProgressPhase } from "@/components/ProgressState";
 import ResultView from "@/components/ResultView";
 import SavedMeetings from "@/components/SavedMeetings";
-import { tasksToCsv } from "@/lib/csv";
+import { downloadXlsx } from "@/lib/exportXlsx";
+import { downloadWord } from "@/lib/exportWord";
 import type { Folder, MeetingSummary } from "@/lib/meetingStore";
 import type { MeetingResult, Task } from "@/lib/types";
 
@@ -298,19 +299,14 @@ export default function Home() {
     }
   }
 
-  function handleExportCsv() {
+  function handleExportExcel() {
     if (!result) return;
-    const csv = tasksToCsv(result, currentDate ?? undefined);
-    // Leading BOM keeps special characters readable when the CSV is opened in Excel.
-    const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "meeting-minutes.csv";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    downloadXlsx(result, currentDate ?? undefined);
+  }
+
+  function handleExportWord() {
+    if (!result) return;
+    downloadWord(result, currentDate ?? undefined);
   }
 
   function handleExportPdf() {
@@ -578,7 +574,8 @@ export default function Home() {
             onRecheck={handleRecheck}
             onUpdate={handleUpdate}
             onTranslate={handleTranslate}
-            onExportCsv={handleExportCsv}
+            onExportExcel={handleExportExcel}
+            onExportWord={handleExportWord}
             onExportPdf={handleExportPdf}
             onReset={handleReset}
             onSave={handleSave}
