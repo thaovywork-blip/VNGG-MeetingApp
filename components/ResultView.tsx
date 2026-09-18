@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 import { formatDateLong } from "@/lib/formatDate";
 import type { Folder } from "@/lib/meetingStore";
 import { BULLET_PREFIXES, parseSummaryBlocks } from "@/lib/parseSummary";
@@ -15,6 +16,7 @@ interface ResultViewProps {
   onDeleteTask: (id: string) => void;
   onAddTask: () => void;
   onRecheck: () => void;
+  onUpdate: (text: string, files: File[]) => void;
   onTranslate: (language: string) => void;
   onExportCsv: () => void;
   onExportPdf: () => void;
@@ -23,6 +25,7 @@ interface ResultViewProps {
   showBack?: boolean;
   onBack?: () => void;
   rechecking: boolean;
+  updating: boolean;
   translating: boolean;
   saving: boolean;
   saved: boolean;
@@ -42,6 +45,7 @@ export default function ResultView({
   onDeleteTask,
   onAddTask,
   onRecheck,
+  onUpdate,
   onTranslate,
   onExportCsv,
   onExportPdf,
@@ -50,6 +54,7 @@ export default function ResultView({
   showBack,
   onBack,
   rechecking,
+  updating,
   translating,
   saving,
   saved,
@@ -142,7 +147,169 @@ export default function ResultView({
 
         <TaskTable tasks={result.tasks} onEdit={onEdit} onDelete={onDeleteTask} onAdd={onAddTask} />
       </div>
+
+      <AddInfoPanel onUpdate={onUpdate} updating={updating} />
     </div>
+  );
+}
+
+const MAX_ADD_INFO_FILE_SIZE = 20 * 1024 * 1024; // 20MB
+
+function isAddInfoTextFile(file: File): boolean {
+  return file.type.startsWith("text/") || file.name.toLowerCase().endsWith(".txt");
+}
+
+function isAddInfoSupportedMedia(file: File): boolean {
+  return (
+    file.type.startsWith("image/") ||
+    file.type.startsWith("audio/") ||
+    file.type === "application/pdf" ||
+    file.name.toLowerCase().endsWith(".pdf")
+  );
+}
+
+interface AddInfoPanelProps {
+  onUpdate: (text: string, files: File[]) => void;
+  updating: boolean;
+}
+
+// Collapsible panel that lets the user fold NEW material (extra notes and/or files) into
+// the existing minutes + action items, without losing their hand edits (pic values, the
+// title, etc. — the backend prompt is responsible for preserving those). Mirrors
+// InputPanel's file handling: .txt/text files are read and merged straight into the
+// textarea, image/audio/PDF files are kept as files for the backend to transcribe.
+function AddInfoPanel({ onUpdate, updating }: AddInfoPanelProps) {
+  const [open, setOpen] = useState(false);
+  const [text, setText] = useState("");
+  const [files, setFiles] = useState<File[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const canUpdate = !updating && (text.trim().length > 0 || files.length > 0);
+
+  async function addFiles(fileList: FileList | File[]) {
+    const incoming = Array.from(fileList);
+    let appendedText = text;
+    const mediaFiles: File[] = [];
+
+    for (const f of incoming) {
+      if (f.size > MAX_ADD_INFO_FILE_SIZE) {
+        toast.error(`File "${f.name}" is too large (max 20MB)`);
+        continue;
+      }
+      if (isAddInfoTextFile(f)) {
+        const content = await f.text();
+        appendedText = appendedText ? `${appendedText}\n\n${content}` : content;
+        continue;
+      }
+      if (isAddInfoSupportedMedia(f)) {
+        mediaFiles.push(f);
+        continue;
+      }
+      toast.error(`Unsupported file type: ${f.name}`);
+    }
+
+    setText(appendedText);
+    setFiles((prev) => [...prev, ...mediaFiles]);
+  }
+
+  function removeFile(index: number) {
+    setFiles((prev) => prev.filter((_, i) => i !== index));
+  }
+
+  function handleUpdateClick() {
+    onUpdate(text, files);
+    setText("");
+    setFiles([]);
+  }
+
+  return (
+    <section className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] shadow-[0_1px_2px_rgba(16,24,40,0.05)]">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        className="flex w-full items-center justify-between gap-2 px-5 py-3.5 text-left"
+      >
+        <span className="flex items-center gap-2 text-sm font-semibold text-[var(--text)]">
+          <span aria-hidden="true">➕</span> Add info &amp; update
+        </span>
+        <span aria-hidden="true" className={`text-[var(--text-muted)] transition-transform ${open ? "rotate-180" : ""}`}>
+          ▾
+        </span>
+      </button>
+
+      {open && (
+        <div className="flex flex-col gap-3 border-t border-[var(--border)] px-5 pb-5 pt-4">
+          <p className="text-xs text-[var(--text-muted)]">
+            Paste extra notes or add more files, then update — this folds the new material into the
+            existing minutes and action items while keeping your PIC assignments and other edits.
+          </p>
+          <textarea
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            placeholder="Paste extra notes or context…"
+            rows={4}
+            className="min-h-[96px] w-full resize-y rounded-xl border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[var(--text)] placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:outline-none focus:ring-[3px] focus:ring-[var(--ring)]"
+          />
+
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="rounded-md border border-dashed border-[var(--border)] px-3 py-1.5 text-xs font-medium text-[var(--text)] transition-colors hover:bg-[var(--surface-2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+            >
+              + Add image / audio / PDF / .txt
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              accept="image/*,audio/*,application/pdf,.pdf,.txt"
+              className="hidden"
+              onChange={(e) => {
+                if (e.target.files?.length) void addFiles(e.target.files);
+                e.target.value = "";
+              }}
+            />
+            <span className="text-xs text-[var(--text-muted)]">
+              Adding image / PDF / audio needs the Gemini key — text always works.
+            </span>
+          </div>
+
+          {files.length > 0 && (
+            <ul className="flex flex-wrap gap-2">
+              {files.map((f, i) => (
+                <li
+                  key={`${f.name}-${i}`}
+                  className="flex items-center gap-2 rounded-full bg-[var(--surface-2)] px-3 py-1 text-xs text-[var(--text)]"
+                >
+                  <span className="max-w-[160px] truncate">{f.name}</span>
+                  <button
+                    type="button"
+                    onClick={() => removeFile(i)}
+                    aria-label={`Remove ${f.name}`}
+                    className="text-[var(--text-muted)] transition-colors hover:text-red-500"
+                  >
+                    ×
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          <div>
+            <button
+              type="button"
+              onClick={handleUpdateClick}
+              disabled={!canUpdate}
+              className="inline-flex items-center gap-1.5 rounded-lg bg-[var(--accent)] px-4 py-2 text-xs font-medium text-white transition-colors hover:bg-[var(--accent-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--ring)] disabled:cursor-not-allowed disabled:bg-[var(--border)] disabled:text-[var(--text-muted)]"
+            >
+              {updating ? "Updating…" : "Update minutes"}
+            </button>
+          </div>
+        </div>
+      )}
+    </section>
   );
 }
 

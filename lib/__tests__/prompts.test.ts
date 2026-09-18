@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { buildClaudePrompt, buildRecheckPrompt, buildTranslatePrompt, GEMINI_AUDIO_PROMPT } from "../prompts";
+import { buildClaudePrompt, buildRecheckPrompt, buildTranslatePrompt, buildUpdatePrompt, GEMINI_AUDIO_PROMPT } from "../prompts";
 
 test("claude prompt embeds raw text, language, JSON schema and the steps", () => {
   const p = buildClaudePrompt("RAW CONTENT", "en");
@@ -83,6 +83,27 @@ test("recheck prompt still requires the summary grouped by topic headings and bu
   expect(p.toLowerCase()).toContain("grouped by topic");
   expect(p).toContain('"## "');
   expect(p).toContain('"- "');
+});
+test("update prompt instructs integrating the new material and includes all three labelled inputs plus the schema", () => {
+  const p = buildUpdatePrompt("original notes", '{"tasks":[]}', "ADDITIONAL STUFF", "en");
+  expect(p.toLowerCase()).toContain("integrate");
+  expect(p).toContain("original notes");
+  expect(p).toContain('{"tasks":[]}');
+  expect(p).toContain("ADDITIONAL STUFF");
+  expect(p).toContain("ORIGINAL NOTES");
+  expect(p).toContain("CURRENT RESULT");
+  expect(p).toContain("NEW ADDITIONAL MATERIAL");
+  expect(p).toContain('"title"');
+  expect(p).toContain('"summary"');
+  expect(p).toContain('"language": "en"');
+  expect(p).toContain('"tasks"');
+  expect(p).toContain('"pic"');
+  expect(p).toContain('"deadline"');
+  expect(p).toContain('"note"');
+});
+test("update prompt keeps pic unchanged", () => {
+  const p = buildUpdatePrompt("x", '{"tasks":[]}', "y", "en");
+  expect(p.toLowerCase()).toContain('keep each existing task\'s "pic" value unchanged');
 });
 test("gemini audio prompt asks for a transcript", () => {
   expect(GEMINI_AUDIO_PROMPT.toLowerCase()).toContain("transcript");

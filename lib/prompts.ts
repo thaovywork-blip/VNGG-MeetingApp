@@ -96,6 +96,39 @@ CURRENT TABLE:
 ${currentJson}`;
 }
 
+export function buildUpdatePrompt(
+  rawText: string,
+  currentJson: string,
+  additionalMaterial: string,
+  language: string,
+): string {
+  return `You are given (a) the ORIGINAL raw notes, (b) the CURRENT meeting minutes and action items as JSON (the user may have hand-entered "pic" values), and (c) NEW ADDITIONAL MATERIAL that was added afterwards.
+Produce an UPDATED result in "${language}" that INTEGRATES the new material into the summary and the action items.
+
+Rules:
+- KEEP the summary's existing markdown structure and format — its "## " headings, and any markdown TABLE under "## Meeting Content" using "|" pipes (keep that table shape: same headers, same "| --- |" separator, same number of columns) — while folding the new material's content into the right headings/rows (adding new rows or bullets as needed).
+- KEEP each existing task's "pic" value UNCHANGED — echo it back exactly as given, and do NOT add, edit, or remove any PIC yourself.
+- ADD new tasks (with "pic" set to an empty string "") for genuinely new action items found in the additional material.
+- Do NOT duplicate tasks — if the new material only confirms or elaborates an existing task, update that task's fields instead of adding a new one.
+- KEEP the "title" AS-IS, including any leading type prefix such as "[Meeting] - ", "[Interview] - ", or "[Other] - " — only refine it if the new material clearly changes the topic.
+
+Return ONLY valid JSON in exactly this shape:
+{"title": string, "summary": string, "language": "${language}", "tasks": [{"task": string, "pic": string, "deadline": string, "note": string}]}
+
+ORIGINAL NOTES:
+"""
+${rawText}
+"""
+
+CURRENT RESULT:
+${currentJson}
+
+NEW ADDITIONAL MATERIAL:
+"""
+${additionalMaterial}
+"""`;
+}
+
 export function buildTranslatePrompt(currentJson: string, targetLanguage: string): string {
   return `Translate ALL user-facing text of this meeting result into "${targetLanguage}", preserving the EXACT JSON schema and the summary's markdown structure ("## " topic headings and "- " bullet lines — translate the text but keep the markers and line breaks). Also preserve any markdown TABLES in the summary (lines using "|" pipes and a "| --- |" separator row) — translate the cell text but keep the table shape (same headers, same "| --- |" separator, same number of columns and rows).
 Translate the "title" field, the "summary" field, and each task's "task", "deadline", and "note" fields.

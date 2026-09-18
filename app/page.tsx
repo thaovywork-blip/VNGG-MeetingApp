@@ -144,6 +144,7 @@ export default function Home() {
   const [result, setResult] = useState<MeetingResult | null>(null);
   const [rawText, setRawText] = useState<string | null>(null);
   const [rechecking, setRechecking] = useState(false);
+  const [updating, setUpdating] = useState(false);
   const [translating, setTranslating] = useState(false);
   const [view, setView] = useState<View>("input");
   // True when the current result was opened from the Saved-meetings list, so the result
@@ -246,6 +247,34 @@ export default function Home() {
       toast.error(friendlyMessage(errorCodeFrom(e)));
     } finally {
       setRechecking(false);
+    }
+  }
+
+  async function handleUpdate(additionalText: string, files: File[]) {
+    if (!result) return;
+    setUpdating(true);
+    try {
+      const media = await filesToMedia(files);
+      const res = await fetch("/api/update", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          rawText: rawText ?? "",
+          current: result,
+          additionalText,
+          media,
+          language: result.language,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error ?? "UNKNOWN");
+      setResult({ title: data.title ?? "", summary: data.summary, language: data.language, tasks: data.tasks });
+      setRawText(typeof data.rawText === "string" ? data.rawText : rawText);
+      toast.success("Minutes updated with new info.");
+    } catch (e) {
+      toast.error(friendlyMessage(errorCodeFrom(e)));
+    } finally {
+      setUpdating(false);
     }
   }
 
@@ -547,6 +576,7 @@ export default function Home() {
             onDeleteTask={handleDeleteTask}
             onAddTask={handleAddTask}
             onRecheck={handleRecheck}
+            onUpdate={handleUpdate}
             onTranslate={handleTranslate}
             onExportCsv={handleExportCsv}
             onExportPdf={handleExportPdf}
@@ -555,6 +585,7 @@ export default function Home() {
             showBack={cameFromSaved}
             onBack={handleBackToSaved}
             rechecking={rechecking}
+            updating={updating}
             translating={translating}
             saving={saving}
             saved={currentMeetingId !== null}
