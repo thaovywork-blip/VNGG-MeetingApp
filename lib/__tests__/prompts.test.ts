@@ -84,15 +84,12 @@ test("recheck prompt still requires the summary grouped by topic headings and bu
   expect(p).toContain('"## "');
   expect(p).toContain('"- "');
 });
-test("update prompt instructs integrating the new material and includes all three labelled inputs plus the schema", () => {
-  const p = buildUpdatePrompt("original notes", '{"tasks":[]}', "ADDITIONAL STUFF", "en");
-  expect(p.toLowerCase()).toContain("integrate");
-  expect(p).toContain("original notes");
+test("update prompt reconciles the result with the source notes and includes labelled inputs plus the schema", () => {
+  const p = buildUpdatePrompt("original source notes", '{"tasks":[]}', "en");
+  expect(p).toContain("original source notes");
   expect(p).toContain('{"tasks":[]}');
-  expect(p).toContain("ADDITIONAL STUFF");
-  expect(p).toContain("ORIGINAL NOTES");
+  expect(p).toContain("SOURCE NOTES");
   expect(p).toContain("CURRENT RESULT");
-  expect(p).toContain("NEW ADDITIONAL MATERIAL");
   expect(p).toContain('"title"');
   expect(p).toContain('"summary"');
   expect(p).toContain('"language": "en"');
@@ -102,8 +99,8 @@ test("update prompt instructs integrating the new material and includes all thre
   expect(p).toContain('"note"');
 });
 test("update prompt keeps pic unchanged", () => {
-  const p = buildUpdatePrompt("x", '{"tasks":[]}', "y", "en");
-  expect(p.toLowerCase()).toContain('keep each existing task\'s "pic" value unchanged');
+  const p = buildUpdatePrompt("x", '{"tasks":[]}', "en");
+  expect(p.toLowerCase()).toContain('keep its existing "pic" value unchanged');
 });
 test("gemini audio prompt asks for a transcript", () => {
   expect(GEMINI_AUDIO_PROMPT.toLowerCase()).toContain("transcript");

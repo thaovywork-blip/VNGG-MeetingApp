@@ -11,6 +11,7 @@ import TaskTable from "./TaskTable";
 interface ResultViewProps {
   result: MeetingResult;
   date?: string;
+  sourceText: string;
   onEdit: (id: string, field: keyof Task, value: string) => void;
   onTitleEdit: (value: string) => void;
   onDeleteTask: (id: string) => void;
@@ -41,6 +42,7 @@ const NEW_FOLDER_VALUE = "__new__";
 export default function ResultView({
   result,
   date,
+  sourceText,
   onEdit,
   onTitleEdit,
   onDeleteTask,
@@ -96,6 +98,8 @@ export default function ResultView({
         </div>
       </div>
 
+      <AddInfoPanel sourceText={sourceText} onUpdate={onUpdate} updating={updating} />
+
       <section className="relative overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface)] py-6 pl-7 pr-6 shadow-[0_1px_2px_rgba(16,24,40,0.05)] sm:py-7 sm:pl-8 sm:pr-7">
         <span aria-hidden="true" className="absolute inset-y-0 left-0 w-[3px] bg-[var(--accent)]" />
         <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">Minutes</p>
@@ -136,8 +140,6 @@ export default function ResultView({
 
         <TaskTable tasks={result.tasks} onEdit={onEdit} onDelete={onDeleteTask} onAdd={onAddTask} />
       </div>
-
-      <AddInfoPanel onUpdate={onUpdate} updating={updating} />
     </div>
   );
 }
@@ -240,20 +242,31 @@ function isAddInfoSupportedMedia(file: File): boolean {
 }
 
 interface AddInfoPanelProps {
+  sourceText: string;
   onUpdate: (text: string, files: File[]) => void;
   updating: boolean;
 }
 
-// Collapsible panel that lets the user fold NEW material (extra notes and/or files) into
-// the existing minutes + action items, without losing their hand edits (pic values, the
-// title, etc. — the backend prompt is responsible for preserving those). Mirrors
+// Collapsible panel that shows the ORIGINAL source notes the minutes were generated from
+// (read, copy, or edit them), lets the user fold in more files, then reconciles the minutes
+// + action items against this (possibly edited) source — without losing hand edits (pic
+// values, the title, etc. — the backend prompt is responsible for preserving those). Mirrors
 // InputPanel's file handling: .txt/text files are read and merged straight into the
 // textarea, image/audio/PDF files are kept as files for the backend to transcribe.
-function AddInfoPanel({ onUpdate, updating }: AddInfoPanelProps) {
+//
+// The textarea's local state initializes from `sourceText` and resyncs whenever it changes
+// externally (e.g. after an update completes) as long as the user isn't actively editing it
+// — same resync-while-not-focused pattern as EditableTitle.
+function AddInfoPanel({ sourceText, onUpdate, updating }: AddInfoPanelProps) {
   const [open, setOpen] = useState(false);
-  const [text, setText] = useState("");
+  const [text, setText] = useState(sourceText);
+  const [focused, setFocused] = useState(false);
   const [files, setFiles] = useState<File[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (!focused) setText(sourceText);
+  }, [sourceText, focused]);
 
   const canUpdate = !updating && (text.trim().length > 0 || files.length > 0);
 
@@ -289,8 +302,16 @@ function AddInfoPanel({ onUpdate, updating }: AddInfoPanelProps) {
 
   function handleUpdateClick() {
     onUpdate(text, files);
-    setText("");
     setFiles([]);
+  }
+
+  async function handleCopy() {
+    try {
+      await navigator.clipboard.writeText(text);
+      toast.success("Copied");
+    } catch {
+      toast.error("Couldn't copy to clipboard.");
+    }
   }
 
   return (
@@ -312,15 +333,29 @@ function AddInfoPanel({ onUpdate, updating }: AddInfoPanelProps) {
       {open && (
         <div className="flex flex-col gap-3 border-t border-[var(--border)] px-5 pb-5 pt-4">
           <p className="text-xs text-[var(--text-muted)]">
-            Paste extra notes or add more files, then update — this folds the new material into the
-            existing minutes and action items while keeping your PIC assignments and other edits.
+            This is the original source notes the minutes were generated from — read, copy, or edit them, add
+            more files below, then update to reconcile the minutes and action items with this source while
+            keeping your PIC assignments and other edits.
           </p>
+
+          <div className="flex items-center justify-between gap-2">
+            <label className="text-xs font-medium text-[var(--text-muted)]">Source notes</label>
+            <button
+              type="button"
+              onClick={() => void handleCopy()}
+              className="inline-flex items-center gap-1 rounded-md border border-[var(--border)] bg-[var(--surface)] px-2 py-1 text-xs font-medium text-[var(--text)] transition-colors hover:bg-[var(--surface-2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+            >
+              <span aria-hidden="true">⧉</span> Copy
+            </button>
+          </div>
           <textarea
             value={text}
             onChange={(e) => setText(e.target.value)}
-            placeholder="Paste extra notes or context…"
-            rows={4}
-            className="min-h-[96px] w-full resize-y rounded-xl border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[var(--text)] placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:outline-none focus:ring-[3px] focus:ring-[var(--ring)]"
+            onFocus={() => setFocused(true)}
+            onBlur={() => setFocused(false)}
+            placeholder="Paste or edit the source notes…"
+            rows={8}
+            className="min-h-[180px] w-full resize-y rounded-xl border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[var(--text)] placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:outline-none focus:ring-[3px] focus:ring-[var(--ring)]"
           />
 
           <div className="flex flex-wrap items-center gap-2">

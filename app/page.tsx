@@ -251,7 +251,7 @@ export default function Home() {
     }
   }
 
-  async function handleUpdate(additionalText: string, files: File[]) {
+  async function handleUpdate(sourceText: string, files: File[]) {
     if (!result) return;
     setUpdating(true);
     try {
@@ -260,9 +260,8 @@ export default function Home() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          rawText: rawText ?? "",
+          sourceText,
           current: result,
-          additionalText,
           media,
           language: result.language,
         }),
@@ -270,8 +269,8 @@ export default function Home() {
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error ?? "UNKNOWN");
       setResult({ title: data.title ?? "", summary: data.summary, language: data.language, tasks: data.tasks });
-      setRawText(typeof data.rawText === "string" ? data.rawText : rawText);
-      toast.success("Minutes updated with new info.");
+      setRawText(typeof data.rawText === "string" ? data.rawText : sourceText);
+      toast.success("Minutes updated.");
     } catch (e) {
       toast.error(friendlyMessage(errorCodeFrom(e)));
     } finally {
@@ -567,6 +566,7 @@ export default function Home() {
           <ResultView
             result={result}
             date={currentDate ?? undefined}
+            sourceText={rawText ?? ""}
             onEdit={handleEdit}
             onTitleEdit={handleTitleEdit}
             onDeleteTask={handleDeleteTask}

@@ -96,37 +96,26 @@ CURRENT TABLE:
 ${currentJson}`;
 }
 
-export function buildUpdatePrompt(
-  rawText: string,
-  currentJson: string,
-  additionalMaterial: string,
-  language: string,
-): string {
-  return `You are given (a) the ORIGINAL raw notes, (b) the CURRENT meeting minutes and action items as JSON (the user may have hand-entered "pic" values), and (c) NEW ADDITIONAL MATERIAL that was added afterwards.
-Produce an UPDATED result in "${language}" that INTEGRATES the new material into the summary and the action items.
+export function buildUpdatePrompt(sourceText: string, currentJson: string, language: string): string {
+  return `Here are the (possibly edited) SOURCE NOTES and the CURRENT meeting minutes/action-items JSON (the user may have hand-entered "pic" values).
+Update the summary and action items in "${language}" so they accurately reflect the SOURCE NOTES — add, revise, or remove items as needed to match the source.
 
 Rules:
-- KEEP the summary's existing markdown structure and format — its "## " headings, and any markdown TABLE under "## Meeting Content" using "|" pipes (keep that table shape: same headers, same "| --- |" separator, same number of columns) — while folding the new material's content into the right headings/rows (adding new rows or bullets as needed).
-- KEEP each existing task's "pic" value UNCHANGED — echo it back exactly as given, and do NOT add, edit, or remove any PIC yourself.
-- ADD new tasks (with "pic" set to an empty string "") for genuinely new action items found in the additional material.
-- Do NOT duplicate tasks — if the new material only confirms or elaborates an existing task, update that task's fields instead of adding a new one.
-- KEEP the "title" AS-IS, including any leading type prefix such as "[Meeting] - ", "[Interview] - ", or "[Other] - " — only refine it if the new material clearly changes the topic.
+- KEEP the summary's existing markdown structure and format — its "## " headings, and any markdown TABLE under "## Meeting Content" using "|" pipes (keep that table shape: same headers, same "| --- |" separator, same number of columns) — while updating its content to match the SOURCE NOTES.
+- KEEP the "title" AS-IS, including any leading type prefix such as "[Meeting] - ", "[Interview] - ", or "[Other] - " — only refine it if the SOURCE NOTES clearly change the topic.
+- For each task that still applies, KEEP its existing "pic" value UNCHANGED — echo it back exactly as given, and do NOT add, edit, or remove any PIC yourself. New tasks get "pic" set to an empty string "".
+- Do NOT duplicate tasks — if the SOURCE NOTES only confirm or elaborate an existing task, update that task's fields instead of adding a new one.
 
 Return ONLY valid JSON in exactly this shape:
 {"title": string, "summary": string, "language": "${language}", "tasks": [{"task": string, "pic": string, "deadline": string, "note": string}]}
 
-ORIGINAL NOTES:
+SOURCE NOTES:
 """
-${rawText}
+${sourceText}
 """
 
 CURRENT RESULT:
-${currentJson}
-
-NEW ADDITIONAL MATERIAL:
-"""
-${additionalMaterial}
-"""`;
+${currentJson}`;
 }
 
 export function buildTranslatePrompt(currentJson: string, targetLanguage: string): string {

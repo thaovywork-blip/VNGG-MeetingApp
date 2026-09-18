@@ -9,9 +9,12 @@ interface MediaInput {
   base64: string;
 }
 
-function buildAdditionalMaterial(additionalText: string, transcripts: { label: string; text: string }[]): string {
+// Appends each transcribed media item (labelled) to the (possibly edited) source text the
+// client sent, so the model reconciles the minutes against the FULL source — original notes
+// plus anything newly attached.
+function buildFullSource(sourceText: string, transcripts: { label: string; text: string }[]): string {
   const parts: string[] = [];
-  if (additionalText.trim()) parts.push(additionalText.trim());
+  if (sourceText.trim()) parts.push(sourceText.trim());
   for (const t of transcripts) {
     if (t.text.trim()) parts.push(`## ${t.label}\n${t.text.trim()}`);
   }
@@ -27,12 +30,11 @@ export async function POST(req: Request) {
     const media: MediaInput[] = body.media ?? [];
     const transcripts = await Promise.all(
       media.map(async (m) => ({ label: m.label, text: await transcribeMedia(m) })));
-    const additionalMaterial = buildAdditionalMaterial(body.additionalText ?? "", transcripts);
-    const rawText = body.rawText ?? "";
+    const fullSource = buildFullSource(body.sourceText ?? "", transcripts);
     const result = await updateMeeting(
-      { rawText, current: body.current, additionalMaterial, language: body.language ?? "English" },
+      { sourceText: fullSource, current: body.current, language: body.language ?? "English" },
       { callModel: callGreenode });
-    return NextResponse.json({ ...result, rawText: `${rawText}\n\n${additionalMaterial}` });
+    return NextResponse.json({ ...result, rawText: fullSource });
   } catch (e) {
     const msg = e instanceof Error ? e.message : "UNKNOWN";
     return NextResponse.json({ error: msg }, { status: msg === "INVALID_RESULT" ? 502 : 500 });
