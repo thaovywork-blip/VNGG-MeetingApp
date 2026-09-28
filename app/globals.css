@@ -200,12 +200,17 @@ body {
 
 /* Small scattered gold hearts around the NOTELY wordmark */
 @keyframes notely-float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-4px); }
+  0%   { transform: translateY(0) rotate(0deg) scale(1); }
+  25%  { transform: translateY(-10px) rotate(-9deg) scale(1.08); }
+  50%  { transform: translateY(-3px) rotate(7deg) scale(1); }
+  75%  { transform: translateY(-12px) rotate(10deg) scale(1.12); }
+  100% { transform: translateY(0) rotate(0deg) scale(1); }
 }
 .notely-heart-deco {
   filter: drop-shadow(0 2px 2px rgba(180, 130, 20, 0.30));
-  animation: notely-float 3.2s ease-in-out infinite;
+  transform-origin: center;
+  will-change: transform;
+  animation: notely-float 2.1s ease-in-out infinite;
 }
 @media (prefers-reduced-motion: reduce) {
   .notely-heart-deco { animation: none; }
@@ -216,7 +221,7 @@ body {
   display: inline-block;
   font-family: var(--font-baloo), system-ui, sans-serif;
   font-weight: 700;
-  font-size: clamp(1.04rem, 2.47vw, 1.37rem);
+  font-size: 0.875rem; /* 14px */
   line-height: 1.15;
   letter-spacing: 0.005em;
   background: linear-gradient(180deg, #ffb3d9 0%, #ff6fa8 35%, #e0408a 65%, #b8226a 100%);
@@ -225,4 +230,13 @@ body {
   color: transparent;
   -webkit-text-fill-color: transparent;
   filter: drop-shadow(0 1px 1px rgba(184, 34, 106, 0.30));
+}
+/* Keep emoji in the tagline in their own colors instead of being clipped to the pink gradient. */
+.notely-tagline-emoji {
+  -webkit-text-fill-color: initial;
+  color: initial;
+  background: none;
+  -webkit-background-clip: initial;
+  background-clip: initial;
+  filter: none;
 }

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { processMeeting } from "@/lib/processMeeting";
-import { transcribeMedia } from "@/lib/gemini";
+import { transcribeMedia, generateMinutesFromMedia } from "@/lib/gemini";
 import { callGreenode } from "@/lib/greenode";
 
 export async function POST(req: Request) {
@@ -10,7 +10,7 @@ export async function POST(req: Request) {
       { text: body.text ?? "", participants: body.participants ?? "", context: body.context ?? "",
         language: body.language ?? "vi", media: body.media ?? [],
         sessionType: body.meetingType === "Interview" || body.meetingType === "Other" ? body.meetingType : "Meeting" },
-      { transcribe: transcribeMedia, callModel: callGreenode });
+      { transcribe: transcribeMedia, callModel: callGreenode, generateFromMedia: generateMinutesFromMedia });
     return NextResponse.json({ ...result, rawText });
   } catch (e) {
     const msg = e instanceof Error ? e.message : "UNKNOWN";

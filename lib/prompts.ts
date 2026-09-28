@@ -15,15 +15,17 @@ const INTERVIEW_SUMMARY_INSTRUCTION = `2. Write a CONCISE but COMPLETE candidate
    - "## Others"
    Each heading is a line starting with "## " followed by the exact heading text above. Under each heading, write one or more bullet lines, each starting with "- ", one concise point per line, putting each point under the best-fitting heading — "## Others" holds anything that doesn't fit the first four. Use "\\n" line breaks between every line (heading and bullet lines alike). Include a heading only if it has at least one point (you may omit an empty one), but prefer to cover Working Experience, Functional Skill, Motivation, and Game Interest whenever the notes mention them. Each bullet is ONE short line — NO filler, NO repetition, NO long prose. It must still be complete — do not omit a key point just to stay short — but say it in as few words as possible, while covering every key point about the candidate.`;
 
-const MEETING_SUMMARY_INSTRUCTION = `2. Write a CONCISE but COMPLETE set of meeting minutes into "summary", using this EXACT markdown-style convention with these headings:
-   - "## Attendees" — one or more "- " bullet lines listing the attendees (and role/title if mentioned).
-   - "## Meeting Content" — the discussion GROUPED BY TOPIC, written as a GitHub-style markdown TABLE directly under the heading, in EXACTLY this shape:
-     "| No. | Topic | Discussion | Owner |"
-     "| --- | --- | --- | --- |"
-     "| 1 | <short topic> | <concise discussion of that topic> | <owner name, or — if unknown> |"
-     One row per key topic, numbered from 1. Keep each cell concise — no filler, no repetition, no long prose. Put "—" in the Owner cell when the owner isn't identifiable. Do NOT put "|" characters inside a cell.
-   - "## Other Notes" — one or more "- " bullet lines for anything else worth recording (omit this heading entirely if there is nothing to note).
-   Each heading is a line starting with "## " followed by the exact heading text above. Use "\\n" line breaks between every line (heading, table, and bullet lines alike). Create AS MANY rows under "## Meeting Content" as the meeting's content needs — adaptive length, NO fixed count. Keep "## Attendees" and "## Other Notes" as "- " bullet lists exactly as described. It must still be complete — do not omit a key topic or decision just to stay short — but say it in as few words as possible, while covering every key topic, decision, and action item.`;
+const MEETING_SUMMARY_INSTRUCTION = `2. Write CONCISE but COMPLETE meeting minutes into "summary", following THIS professional structure and order, using the markdown-style convention below (headings start with "## ", bullets start with "- "):
+   - "## Meeting Details" — bullet lines capturing the meeting metadata, in this order:
+     "- Meeting Type: <a short description of the meeting's type / purpose>"
+     "- Attendees: <comma-separated attendee names, with role/title if mentioned>"
+     "- Prepared By: <the note-taker's name if it is stated in the notes, otherwise —>"
+     "- Classification: Internal"
+     Use "—" for any value that is not stated in the notes.
+   - "## Objective" — ONE short paragraph (1-2 sentences) stating the goal / purpose of the meeting.
+   - Then NUMBERED topic sections, GROUPED BY TOPIC: for EACH major topic, decision area, or agenda item, a heading line "## 1. <Topic Title>", "## 2. <Topic Title>", "## 3. <Topic Title>", ... numbered in order. Under each heading, write a short lead-in sentence and/or one or more "- " bullet lines capturing the discussion, decisions, options, and concrete details (numbers, dates, names) for that topic. You MAY lead a line with a plain "Label: value" (for example "Venue: Indoor (agreed) — reduces cost and weather risk."). Create AS MANY numbered sections as the meeting needs — adaptive, NO fixed count.
+   - "## Other Notes" — one or more "- " bullet lines for feedback, reminders, or anything else worth recording. OMIT this heading entirely if there is nothing to note.
+   Use "\\n" line breaks between every line (heading and bullet lines alike). Keep each point concise — no filler, no repetition — but COMPLETE: do not omit any key topic, decision, number, name, or date. Put the concrete follow-up ACTION ITEMS into the "tasks" list described below, NOT into the summary.`;
 
 const OTHER_SUMMARY_INSTRUCTION = `2. Write a CONCISE but COMPLETE summary into "summary", FREESTYLE according to the actual content (no fixed set of headings) but STILL GROUPED into small topics, using this EXACT markdown-style convention:
    - Each topic is a heading line starting with "## " followed by a short topic name that fits the content.

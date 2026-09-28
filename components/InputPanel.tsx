@@ -23,7 +23,10 @@ interface InputPanelProps {
   onSessionTypeChange: (sessionType: SessionType) => void;
 }
 
-const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
+// Media is uploaded to Gemini via the File API (not inline), so we can accept
+// large meeting recordings. The cap here just protects the base64 upload to our
+// own API route from being unreasonably huge.
+const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
 
 const LANGUAGE_OPTIONS: { value: OutputLanguage; label: string }[] = [
   { value: "English", label: "English" },
@@ -77,7 +80,7 @@ export default function InputPanel({
 
     for (const f of incoming) {
       if (f.size > MAX_FILE_SIZE) {
-        toast.error(`File "${f.name}" is too large (max 20MB)`);
+        toast.error(`File "${f.name}" is too large (max ${MAX_FILE_SIZE / (1024 * 1024)}MB)`);
         continue;
       }
       if (isTextFile(f)) {

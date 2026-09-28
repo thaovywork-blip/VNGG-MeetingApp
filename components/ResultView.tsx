@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { formatDateLong } from "@/lib/formatDate";
+import { formatDateLong, fromDateInputValue, toDateInputValue } from "@/lib/formatDate";
 import type { Folder } from "@/lib/meetingStore";
 import { BULLET_PREFIXES, parseSummaryBlocks } from "@/lib/parseSummary";
 import type { MeetingResult, Task } from "@/lib/types";
@@ -11,9 +11,11 @@ import TaskTable from "./TaskTable";
 interface ResultViewProps {
   result: MeetingResult;
   date?: string;
+  onDateChange?: (iso: string) => void;
   sourceText: string;
   onEdit: (id: string, field: keyof Task, value: string) => void;
   onTitleEdit: (value: string) => void;
+  onSummaryEdit: (value: string) => void;
   onDeleteTask: (id: string) => void;
   onAddTask: () => void;
   onRecheck: () => void;
@@ -42,9 +44,11 @@ const NEW_FOLDER_VALUE = "__new__";
 export default function ResultView({
   result,
   date,
+  onDateChange,
   sourceText,
   onEdit,
   onTitleEdit,
+  onSummaryEdit,
   onDeleteTask,
   onAddTask,
   onRecheck,
@@ -93,7 +97,7 @@ export default function ResultView({
       <div className="flex flex-col gap-1">
         <EditableTitle value={result.title} onCommit={onTitleEdit} />
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <p className="text-xs text-[var(--text-muted)]">{formatDateLong(date)}</p>
+          <EditableDate date={date} onChange={onDateChange} />
           <TranslatePicker language={result.language} onTranslate={onTranslate} translating={translating} />
         </div>
       </div>
@@ -102,10 +106,7 @@ export default function ResultView({
 
       <section className="relative overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface)] py-6 pl-7 pr-6 shadow-[0_1px_2px_rgba(16,24,40,0.05)] sm:py-7 sm:pl-8 sm:pr-7">
         <span aria-hidden="true" className="absolute inset-y-0 left-0 w-[3px] bg-[var(--accent)]" />
-        <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">Minutes</p>
-        <div className="mt-3">
-          <SummaryContent summary={result.summary} />
-        </div>
+        <EditableSummary summary={result.summary} onCommit={onSummaryEdit} />
       </section>
 
       <div className="flex flex-col gap-3">
@@ -695,5 +696,103 @@ function EditableTitle({ value, onCommit }: EditableTitleProps) {
       }}
       className="w-full rounded-md border border-transparent bg-transparent px-1.5 py-1 -mx-1.5 text-xl font-semibold text-[var(--text)] placeholder:font-normal placeholder:text-[var(--text-muted)] transition-colors hover:bg-[var(--surface-2)] focus:border-[var(--accent)] focus:bg-[var(--surface)] focus:outline-none focus:ring-[3px] focus:ring-[var(--ring)] sm:text-2xl"
     />
+  );
+}
+
+// Minutes box: renders the parsed summary, with an Edit toggle that swaps in a
+// textarea over the raw markdown-style text so the user can hand-edit the minutes.
+function EditableSummary({ summary, onCommit }: { summary: string; onCommit: (v: string) => void }) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(summary);
+
+  function start() { setDraft(summary); setEditing(true); }
+  function done() { onCommit(draft); setEditing(false); }
+
+  return (
+    <>
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">Minutes</p>
+        {!editing && (
+          <button
+            type="button"
+            onClick={start}
+            className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-[var(--text-muted)] transition-colors hover:text-[var(--accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+          >
+            <span aria-hidden="true">✎</span> Edit
+          </button>
+        )}
+      </div>
+
+      {editing ? (
+        <div className="mt-3 flex flex-col gap-2">
+          <textarea
+            value={draft}
+            autoFocus
+            onChange={(e) => setDraft(e.target.value)}
+            rows={Math.min(28, Math.max(8, draft.split("\n").length + 1))}
+            className="w-full resize-y rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 py-2 font-mono text-xs leading-relaxed text-[var(--text)] focus:border-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]"
+          />
+          <p className="text-[11px] text-[var(--text-muted)]">
+            Format: <code className="rounded bg-[var(--surface-2)] px-1">## </code> heading,{" "}
+            <code className="rounded bg-[var(--surface-2)] px-1">- </code> bullet,{" "}
+            <code className="rounded bg-[var(--surface-2)] px-1">| a | b |</code> table row.
+          </p>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={done}
+              className="inline-flex items-center rounded-lg border border-[var(--accent)] bg-[var(--accent)] px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-[var(--accent-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+            >
+              Done
+            </button>
+            <button
+              type="button"
+              onClick={() => setEditing(false)}
+              className="inline-flex items-center rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-xs font-medium text-[var(--text-muted)] transition-colors hover:text-[var(--text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="mt-3">
+          <SummaryContent summary={summary} />
+        </div>
+      )}
+    </>
+  );
+}
+
+// Meeting date shown under the title. Click the date to reveal a date picker; if
+// no onChange is provided it renders as plain text (read-only contexts).
+function EditableDate({ date, onChange }: { date?: string; onChange?: (iso: string) => void }) {
+  const [editing, setEditing] = useState(false);
+
+  if (!onChange) {
+    return <p className="text-xs text-[var(--text-muted)]">{formatDateLong(date)}</p>;
+  }
+  if (editing) {
+    return (
+      <input
+        type="date"
+        autoFocus
+        defaultValue={toDateInputValue(date)}
+        onChange={(e) => { if (e.target.value) onChange(fromDateInputValue(e.target.value)); }}
+        onBlur={() => setEditing(false)}
+        onKeyDown={(e) => { if (e.key === "Enter" || e.key === "Escape") setEditing(false); }}
+        className="rounded-md border border-[var(--border)] bg-[var(--surface)] px-2 py-1 text-xs text-[var(--text)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]"
+      />
+    );
+  }
+  return (
+    <button
+      type="button"
+      onClick={() => setEditing(true)}
+      title="Edit date"
+      className="inline-flex items-center gap-1 rounded-md px-1 py-0.5 -mx-1 text-xs text-[var(--text-muted)] transition-colors hover:text-[var(--accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+    >
+      {formatDateLong(date)}
+      <span aria-hidden="true" className="opacity-60">✎</span>
+    </button>
   );
 }

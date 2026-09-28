@@ -29,11 +29,15 @@ test("claude prompt instructs the model not to assign PIC or classify decided/pr
   expect(p.toLowerCase()).toContain("do not assign a person-in-charge (pic)");
   expect(p).not.toContain('"pic"');
 });
-test("claude prompt structures the summary for Meeting sessions with Attendees / Meeting Content / Other Notes", () => {
+test("claude prompt structures Meeting sessions as Meeting Details / Objective / numbered topics / Other Notes", () => {
   const p = buildClaudePrompt("x", "en", "Meeting");
-  expect(p).toContain("## Attendees");
-  expect(p).toContain("## Meeting Content");
+  expect(p).toContain("## Meeting Details");
+  expect(p).toContain("## Objective");
+  expect(p).toContain("## 1. "); // numbered topic sections
   expect(p).toContain("## Other Notes");
+  expect(p.toLowerCase()).toContain("meeting type");
+  expect(p.toLowerCase()).toContain("attendees");
+  expect(p.toLowerCase()).toContain("classification");
 });
 test("claude prompt structures the summary for Interview sessions with the five candidate headings", () => {
   const p = buildClaudePrompt("x", "en", "Interview");
