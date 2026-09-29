@@ -521,7 +521,7 @@ export default function Home() {
             <Wordmark />
           </h1>
           <p className="notely-tagline relative z-10">
-            mọi ghi chú có NOTELY lo <span className="notely-tagline-emoji">✨</span>
+            Mọi ghi chú khó, có NOTELY lo <span className="notely-tagline-emoji">✨</span>
           </p>
         </header>
 

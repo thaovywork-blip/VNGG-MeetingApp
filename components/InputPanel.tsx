@@ -37,7 +37,7 @@ const LANGUAGE_OPTIONS: { value: OutputLanguage; label: string }[] = [
 const SESSION_TYPE_OPTIONS: { value: SessionType; label: string }[] = [
   { value: "Meeting", label: "Meeting" },
   { value: "Interview", label: "Interview" },
-  { value: "Other", label: "Other" },
+  // "Other" temporarily removed from the UI (not needed yet); type/prompt support kept for easy re-enable.
 ];
 
 function isTextFile(file: File): boolean {

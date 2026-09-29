@@ -29,6 +29,37 @@ test("claude prompt instructs the model not to assign PIC or classify decided/pr
   expect(p.toLowerCase()).toContain("do not assign a person-in-charge (pic)");
   expect(p).not.toContain('"pic"');
 });
+test("claude prompt puts stated dates into deadline and blanks only when no date at all", () => {
+  const p = buildClaudePrompt("x", "en").toLowerCase();
+  expect(p).toContain("never invent");
+  expect(p).toContain("deadline");
+  expect(p).toContain("empty string");
+  expect(p).toContain("exactly as stated"); // stated dates go into the deadline column
+});
+test("claude prompt injects today's date and the year rules (keep stated year, no fabricated year)", () => {
+  const p = buildClaudePrompt("x", "en").toLowerCase();
+  expect(p).toContain("today's date is");
+  expect(p).toContain("copy it exactly");            // keep a stated year unchanged
+  expect(p).toContain("without adding a year");       // don't fabricate a missing year
+  expect(p).toContain("past or previous year");
+});
+test("claude prompt forbids a separate timeline/milestones section (dates go to the tasks list)", () => {
+  const p = buildClaudePrompt("x", "en").toLowerCase();
+  expect(p).toContain("do not create a separate");
+  expect(p).toContain("timeline");
+});
+test("recheck prompt forbids inventing deadlines and pins the year rules", () => {
+  const p = buildRecheckPrompt("o", '{"tasks":[]}', "en").toLowerCase();
+  expect(p).toContain("do not invent");
+  expect(p).toContain("deadline");
+  expect(p).toContain("today's date is");
+});
+test("update prompt forbids inventing deadlines and pins the year rules", () => {
+  const p = buildUpdatePrompt("o", '{"tasks":[]}', "en").toLowerCase();
+  expect(p).toContain("do not invent");
+  expect(p).toContain("deadline");
+  expect(p).toContain("today's date is");
+});
 test("claude prompt structures Meeting sessions as Meeting Details / Objective / numbered topics / Other Notes", () => {
   const p = buildClaudePrompt("x", "en", "Meeting");
   expect(p).toContain("## Meeting Details");
@@ -54,6 +85,12 @@ test("claude prompt for Other sessions is freestyle but still grouped into topic
   expect(p).toContain('"## "');
   expect(p).not.toContain("## Working Experience");
   expect(p).not.toContain("## Attendees");
+});
+test("interview Others section is the catch-all and includes salary/compensation", () => {
+  const p = buildClaudePrompt("x", "en", "Interview");
+  expect(p).toContain("## Others");
+  expect(p.toLowerCase()).toContain("salary");
+  expect(p.toLowerCase()).toContain("catch-all");
 });
 test("claude prompt enforces the [Type] - <topic> title format per session type", () => {
   expect(buildClaudePrompt("x", "en", "Meeting")).toContain("[Meeting] - ");

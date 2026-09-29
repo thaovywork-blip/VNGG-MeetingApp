@@ -24,11 +24,29 @@ export interface ProcessOutput {
 const AUDIO_THOROUGHNESS =
   "\n\nIMPORTANT — the source is an audio recording: be THOROUGH and COMPLETE. Capture EVERY distinct topic, decision, action item, question, number, date, name, and commitment that is actually mentioned in the recording. Do NOT drop or merge points just to be short — prefer full coverage. Keep each individual point concise, but add AS MANY topic rows / bullet lines as the discussion actually contains.";
 
-async function parseWithRetry(call: () => Promise<string>): Promise<MeetingResult> {
+// Ask the audio one-shot to ALSO return a verbatim transcript, so the "Add info"
+// panel can show the full original text of the recording for the user to verify/edit.
+const AUDIO_TRANSCRIPT_INSTRUCTION =
+  '\n\nADDITIONALLY, add ONE more top-level field to the JSON: "transcript" — a faithful, near-verbatim transcript (or the full extracted text) of the attached recording / file(s), in their ORIGINAL spoken language, preserving speaker turns when audible. The final JSON object MUST be exactly: {"title": string, "summary": string, "language": string, "tasks": [...], "transcript": string}.';
+
+// Pull the extra "transcript" field out of the raw model JSON (best-effort).
+function extractTranscript(raw: string): string {
+  try {
+    const fence = raw.match(/```(?:json)?\s*([\s\S]*?)```/i);
+    const start = raw.indexOf("{");
+    const end = raw.lastIndexOf("}");
+    const jsonStr = fence ? fence[1] : start !== -1 && end > start ? raw.slice(start, end + 1) : "";
+    if (!jsonStr) return "";
+    const o = JSON.parse(jsonStr) as Record<string, unknown>;
+    return typeof o.transcript === "string" ? o.transcript : "";
+  } catch { return ""; }
+}
+
+async function generateAndParse(call: () => Promise<string>): Promise<{ result: MeetingResult; raw: string }> {
   const first = await call();
-  try { return parseResult(first); } catch { /* retry once */ }
+  try { return { result: parseResult(first), raw: first }; } catch { /* retry once */ }
   const second = await call();
-  try { return parseResult(second); } catch { throw new Error("INVALID_RESULT"); }
+  try { return { result: parseResult(second), raw: second }; } catch { throw new Error("INVALID_RESULT"); }
 }
 
 export async function processMeeting(req: ProcessRequest, deps: ProcessDeps): Promise<ProcessOutput> {
@@ -37,22 +55,26 @@ export async function processMeeting(req: ProcessRequest, deps: ProcessDeps): Pr
 
   // Audio path: skip the separate transcript step and the second model call —
   // Gemini listens to the recording (plus any typed notes / images / PDFs) and
-  // writes the minutes JSON directly. Much faster for long recordings, but there
-  // is no verbatim transcript to store.
+  // writes the minutes JSON directly, PLUS a verbatim transcript in the same call.
   if (hasAudio && deps.generateFromMedia) {
     const typed = buildRawText({ text: req.text, participants: req.participants, context: req.context, media: [] });
     const promptSource = [
       typed,
       "The full source material is the attached recording(s)/file(s). Listen to and read them, and treat their content as the notes.",
     ].filter((s) => s.trim()).join("\n\n");
-    const prompt = buildClaudePrompt(promptSource, req.language, sessionType) + AUDIO_THOROUGHNESS;
+    const prompt = buildClaudePrompt(promptSource, req.language, sessionType) + AUDIO_THOROUGHNESS + AUDIO_TRANSCRIPT_INSTRUCTION;
     const media = req.media;
-    const result = await parseWithRetry(() => deps.generateFromMedia!({ media, prompt }));
-    // Store what we can as the editable source (no transcript is kept for audio).
-    const rawText = buildRawText({
-      text: req.text, participants: req.participants, context: req.context,
-      media: req.media.map((m) => ({ label: m.label, text: "(processed directly by AI — transcript not stored)" })),
-    });
+    const { result, raw } = await generateAndParse(() => deps.generateFromMedia!({ media, prompt }));
+
+    // Store the transcript (when returned) as the editable source so "Add info" shows
+    // the full original text; fall back to a placeholder if the model omitted it.
+    const transcript = extractTranscript(raw).trim();
+    const rawText = transcript
+      ? [typed, `## Transcript (from recording / file)\n${transcript}`].filter((s) => s.trim()).join("\n\n")
+      : buildRawText({
+          text: req.text, participants: req.participants, context: req.context,
+          media: req.media.map((m) => ({ label: m.label, text: "(processed directly by AI — transcript not stored)" })),
+        });
     return { result, rawText };
   }
 
@@ -61,6 +83,6 @@ export async function processMeeting(req: ProcessRequest, deps: ProcessDeps): Pr
     req.media.map(async (m) => ({ label: m.label, text: await deps.transcribe(m) })));
   const raw = buildRawText({ text: req.text, participants: req.participants, context: req.context, media: transcripts });
   const prompt = buildClaudePrompt(raw, req.language, sessionType);
-  const result = await parseWithRetry(() => deps.callModel(prompt));
+  const { result } = await generateAndParse(() => deps.callModel(prompt));
   return { result, rawText: raw };
 }

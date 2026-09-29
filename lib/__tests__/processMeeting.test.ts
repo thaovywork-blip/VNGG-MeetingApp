@@ -39,6 +39,18 @@ test("audio input uses one-shot generateFromMedia and skips transcribe + callMod
   expect(arg.prompt).toContain("[Meeting] - "); // carries the session-type template/title rules
   expect(arg.prompt).toContain("THOROUGH"); // audio path pushes for full coverage
 });
+test("audio one-shot stores the returned transcript as the editable source text", async () => {
+  const withTranscript = '{"title":"[Meeting] - x","summary":"s","language":"en","tasks":[],"transcript":"Alice: hello everyone. Bob: hi."}';
+  const generateFromMedia = vi.fn(async () => withTranscript);
+  const r = await processMeeting(
+    { text: "", participants: "", context: "", language: "en",
+      media: [{ label: "Audio 1", mimeType: "audio/mp4", base64: "AA" }] },
+    { transcribe: vi.fn(), callModel: vi.fn(), generateFromMedia });
+  expect(r.rawText).toContain("Alice: hello everyone");
+  expect(r.rawText).toContain("Transcript");
+  const calls = generateFromMedia.mock.calls as unknown as { prompt: string }[][];
+  expect(calls[0][0].prompt).toContain('"transcript"'); // prompt requests the transcript field
+});
 test("audio one-shot retries once on invalid output then throws", async () => {
   const generateFromMedia = vi.fn(async () => "rác");
   await expect(processMeeting(
