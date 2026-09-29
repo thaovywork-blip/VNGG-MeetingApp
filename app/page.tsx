@@ -521,7 +521,7 @@ export default function Home() {
             <Wordmark />
           </h1>
           <p className="notely-tagline relative z-10">
-            files IN, minutes OUT <span className="notely-tagline-emoji">✨</span>
+            mọi ghi chú có NOTELY lo <span className="notely-tagline-emoji">✨</span>
           </p>
         </header>
 
